@@ -51,4 +51,8 @@ describe "Gen" do
       i.must_include "test-opt2 0"
     end
   end
+
+  it "should generate exactly the same config when invoked twice" do
+    addon.generate.must_equal addon.generate
+  end
 end

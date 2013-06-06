@@ -1,13 +1,18 @@
 module Hussar
   class Shell
     def initialize(&block)
+      @block = block
+      reset!
+    end
+
+    def reset!
       @commands = []
       @expect_output = nil
       @cron = nil
-      @block = block
     end
 
     def generate(options = {})
+      reset!
       @options = options
       instance_exec(&@block)
       h = {}
