@@ -91,6 +91,14 @@ module Hussar
       name
     end
 
+    def service_port(service = nil)
+      read_var(".ports", service)
+    end
+
+    def service_domain(service = nil)
+      read_var(".domain", service)
+    end
+
     def mkpath(f, service = nil)
       if service
         "SERVICE_PREFIX/../#{service}/#{f}"

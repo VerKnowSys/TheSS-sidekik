@@ -88,19 +88,25 @@ All file paths will be relative to `SERVICE_PREFIX`
 
 ### VAR abstraction
 
-In case of dynamicly generating config files where you need to read .ports file there is a helper for that:
+In case of dynamicly generated config files where you need to read .ports file there is a helper for that:
 
 ```ruby
   a.validate do
     vars = []
-    vars << read_var(".ports")          # own port
-    vars << read_var(".ports", "Redis") # other service port
-    vars << "USER"                      # use any ENV variable
+    vars << service_port              # own port
+    vars << service_port("Redis")     # other service port
+    vars << service_domain("Nginx")   # other service domain
+    vars << read_var(".foo")          # read SERVICE_PREFIX/.foo file
+    vars << read_var(".bar", "Mysql") # read SERVICE_PREFIX../Mysql/.bar file
+    vars << "USER"                    # any other ENV variable
 
     file "service.conf", vars, <<-EOS
       [some]
       config.port = %s
       config.redis.port = %s
+      config.nginx.domain = %s
+      config.foo = %s
+      config.bar = %s
       config.user = %s
     EOS
   end
@@ -114,11 +120,17 @@ This will create the following igniter:
     "commands": "
 HSR_VAR_0=`cat SERVICE_PREFIX/.ports`
 HSR_VAR_1=`cat SERVICE_PREFIX/../Redis/.ports`
+HSR_VAR_2=`cat SERVICE_PREFIX/../Nginx/.domain`
+HSR_VAR_3=`cat SERVICE_PREFIX/.foo`
+HSR_VAR_4=`cat SERVICE_PREFIX/../Mysql/.bar`
 test ! -f SERVICE_PREFIX/service.conf && printf '
 [some]
 config.port = %s
 config.redis.port = %s
-config.user = %s' $HSR_VAR_0 $HSR_VAR_1 $USER > SERVICE_PREFIX/service.conf
+config.nginx.domain = %s
+config.foo = %s
+config.bar = %s
+config.user = %s' $HSR_VAR_0 $HSR_VAR_1 $HSR_VAR_2 $HSR_VAR_3 $HSR_VAR_4 $USER > SERVICE_PREFIX/service.conf
 "
   }
 ```
