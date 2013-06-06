@@ -82,7 +82,8 @@ module Hussar
       end
 
       def [](name)
-        all[name].dup
+        a = all[name]
+        a && a.dup
       end
 
       def register(addon)
