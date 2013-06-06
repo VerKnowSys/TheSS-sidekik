@@ -101,3 +101,9 @@ Multiple `cron` blocks allowed
   end
 ```
 
+
+## Testing
+
+```
+$ rake test
+```

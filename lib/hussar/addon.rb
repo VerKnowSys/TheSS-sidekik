@@ -62,7 +62,7 @@ module Hussar
     def generate(options = {})
       options = @default_options.merge(options)
 
-      default_fields.merge(@fields).inject({}) do |hash, (field, gen_or_value)|
+      igniter = default_fields.merge(@fields).inject({}) do |hash, (field, gen_or_value)|
         value = if gen_or_value.respond_to?(:generate)
           gen_or_value.generate(options)
         else
@@ -70,6 +70,8 @@ module Hussar
         end
         hash.merge(Hussar.camel_case(field) => value)
       end
+
+      IndifferentHash.new(igniter) # mostly for testing purposes, but it might be useful somedat
     end
 
     def option(name, default)
