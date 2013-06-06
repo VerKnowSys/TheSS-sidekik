@@ -1,0 +1,12 @@
+{
+  "name": "TestApp",
+  "addons": [
+    {
+      "type": "Mysql",
+      "max_connections": 666 // <<--- note that option!
+    },
+    {
+      "type": "Redis"
+    }
+  ]
+}

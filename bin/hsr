@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.expand_path('../../lib', File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__)
+
+require 'rubygems' unless Object.const_defined?(:Gem)
+
+require "hussar"
+require "hussar/cli"
+
+Hussar::CLI.run(ARGV)
