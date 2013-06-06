@@ -54,7 +54,7 @@ module Hussar
     def default_install
       soft = @fields[:software_name].downcase
       Shell.new do
-        sh "sofin get #{soft}", false
+        sh "sofin get #{soft}", :nolog
         expect "All done"
       end
     end

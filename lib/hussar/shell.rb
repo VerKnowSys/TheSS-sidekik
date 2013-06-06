@@ -23,7 +23,7 @@ module Hussar
 
     def sh(cmd, log = true)
       cmd = "#{Hussar.strip_margin(cmd)}"
-      cmd << " 2>&1 >> #{mkpath("service.log")}" if log
+      cmd << " 2>&1 >> #{mkpath("service.log")}" unless log == :nolog
       @commands << cmd
     end
 
@@ -35,27 +35,27 @@ module Hussar
       path = mkpath(dir)
       cmd = "test ! -d #{path} && mkdir -p #{path}"
       cmd << " && chmod #{chmod} #{path}" if chmod
-      sh cmd, false
+      sh cmd, :nolog
     end
 
     def file(name, body)
       path = mkpath(name)
       content = Hussar.strip_margin(body)
-      sh "test ! -f #{path} && printf '\n#{content}' > #{path}", false
+      sh "test ! -f #{path} && printf '\n#{content}' > #{path}", :nolog
     end
 
     def touch(file)
-      sh "touch #{mkpath(file)}", false
+      sh "touch #{mkpath(file)}", :nolog
     end
 
     def backup(file)
       path = mkpath(file)
-      sh "test -e #{path} && cp #{path} #{path}-$(date +'%Y-%m-%d--%H%M').backup", false
+      sh "test -e #{path} && cp #{path} #{path}-$(date +'%Y-%m-%d--%H%M').backup", :nolog
     end
 
     def cp_r_from_root(file)
       path = mkpath(file)
-      sh "test ! -d #{path} && cp -r SERVICE_ROOT/#{file} SERVICE_PREFIX", false
+      sh "test ! -d #{path} && cp -r SERVICE_ROOT/#{file} SERVICE_PREFIX", :nolog
     end
 
     def expect(out)

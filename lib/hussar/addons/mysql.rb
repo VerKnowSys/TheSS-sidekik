@@ -63,7 +63,7 @@ addon "Mysql" do |a|
 
   a.scheduler_actions do
     cron "0 */3 * * * ?" do
-      sh "echo 'Mysql what? Misa nie rozumić mysql crap.'", false
+      sh "echo 'Mysql what? Misa nie rozumić mysql crap.'", :nolog
     end
   end
 end
