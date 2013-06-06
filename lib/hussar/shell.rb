@@ -9,6 +9,7 @@ module Hussar
       @commands = []
       @expect_output = nil
       @cron = nil
+      @var_count = 0
     end
 
     def generate(options = {})
@@ -43,10 +44,17 @@ module Hussar
       sh cmd, :nolog
     end
 
-    def file(name, body)
+    def file(name, *args)
+      body, vars = if args.size == 1
+        [args.first, []]
+      else
+        [args.last, args.first]
+      end
+
       path = mkpath(name)
       content = Hussar.strip_margin(body)
-      sh "test ! -f #{path} && printf '\n#{content}' > #{path}", :nolog
+      vars_sh = vars.map {|v| "$#{v}"}.join(" ")
+      sh "test ! -f #{path} && printf '\n#{content}' #{vars_sh} > #{path}", :nolog
     end
 
     def touch(file)
@@ -63,6 +71,10 @@ module Hussar
       sh "test ! -d #{path} && cp -r SERVICE_ROOT/#{file} SERVICE_PREFIX", :nolog
     end
 
+    def daemonize(cmd)
+      sh "(#{cmd} >> SERVICE_PREFIX/service.log 2>&1 < /dev/null & echo $! > SERVICE_PREFIX/service.pid) &", :nolog
+    end
+
     def expect(out)
       @expect_output = out
     end
@@ -71,8 +83,20 @@ module Hussar
       sh "printf '#{msg}'\n"
     end
 
-    def mkpath(f)
-      "SERVICE_PREFIX/#{f}"
+    def read_var(file, service = nil)
+      name = "HSR_VAR_#{@var_count}"
+      path = mkpath(file, service)
+      sh "#{name}=`cat #{path}`", :nolog
+      @var_count += 1
+      name
+    end
+
+    def mkpath(f, service = nil)
+      if service
+        "SERVICE_PREFIX/../#{service}/#{f}"
+      else
+        "SERVICE_PREFIX/#{f}"
+      end
     end
   end
 end

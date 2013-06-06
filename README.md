@@ -85,6 +85,43 @@ All file paths will be relative to `SERVICE_PREFIX`
 - `expect(out)` - Define excepted output for validation
 - `info(msg)` - Just a print
 
+
+### VAR abstraction
+
+In case of dynamicly generating config files where you need to read .ports file there is a helper for that:
+
+```ruby
+  a.validate do
+    vars = []
+    vars << read_var(".ports")          # own port
+    vars << read_var(".ports", "Redis") # other service port
+    vars << "USER"                      # use any ENV variable
+
+    file "service.conf", vars, <<-EOS
+      [some]
+      config.port = %s
+      config.redis.port = %s
+      config.user = %s
+    EOS
+  end
+```
+
+
+This will create the following igniter:
+
+```json
+  "validate": {
+    "commands": "
+HSR_VAR_0=`cat SERVICE_PREFIX/.ports`
+HSR_VAR_1=`cat SERVICE_PREFIX/../Redis/.ports`
+test ! -f SERVICE_PREFIX/service.conf && printf '
+[some]
+config.port = %s
+config.redis.port = %s' $HSR_VAR_0 $HSR_VAR_1 $USER > SERVICE_PREFIX/service.conf
+"
+  }
+```
+
 ### Scheduler actions
 
 Multiple `cron` blocks allowed

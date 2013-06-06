@@ -16,6 +16,7 @@ module Hussar
   end
 
   def self.strip_margin(str)
+    return str if str =~ /^\s*$/
     lines = skip_blank(skip_blank(str.split("\n").reverse).reverse)
     margin = lines.first[/^\s*/].size
     lines.map {|line| line.sub(/^\s{#{margin}}/, '') }.join("\n").chomp
