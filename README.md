@@ -84,12 +84,12 @@ All file paths will be relative to `SERVICE_PREFIX`
 - `expect(out)` - Define excepted output for validation
 - `info(msg)` - Just a print
 
-### Scheduled actions
+### Scheduler actions
 
 Multiple `cron` blocks allowed
 
 ```ruby
-  a.scheuled_actions do
+  a.scheduler_actions do
     cron "*/5 * * * * ?" do
       backup "database/database.rdf"
     end
