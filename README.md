@@ -45,7 +45,6 @@ $ bin/hsr app.json
 
 ## Addon DSL
 
-
 ### Basics
 ```ruby
 addon "AddonName" do |a|
@@ -53,6 +52,10 @@ addon "AddonName" do |a|
 
   a.start do
     sh "run-something"
+  end
+
+  a.validate do
+    mkdir "database"
   end
 end
 ```
@@ -70,12 +73,14 @@ end
 
 ### Shell block commands
 
+All file paths will be relative to `SERVICE_PREFIX`
+
 - `sh(cmd, log = true)` - Execute command with output redirected to `service.log`
-- `rake(*tasks)` - Run rake task `rake "task1", "task2"
+- `rake(*tasks)` - Run rake task `rake "task1", "task2"`
 - `mkdir(dir, chmod = nil)` - Create new directory + optional chmod
 - `file(name, body)` - Create a file if not exists
 - `touch(file)` - Touch a file
-- `backup(file)` - Copy file to FILE-CURRENT_TIME.backup
+- `backup(file)` - Copy file to `FILE-CURRENT_TIME.backup`
 - `expect(out)` - Define excepted output for validation
 - `info(msg)` - Just a print
 
