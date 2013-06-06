@@ -14,3 +14,4 @@ include Hussar::DSL
 
 require "hussar/addons/mysql"
 require "hussar/addons/redis"
+require "hussar/addons/elasticsearch"

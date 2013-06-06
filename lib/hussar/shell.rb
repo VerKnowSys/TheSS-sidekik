@@ -53,6 +53,11 @@ module Hussar
       sh "test -e #{path} && cp #{path} #{path}-$(date +'%Y-%m-%d--%H%M').backup", false
     end
 
+    def cp_r_from_root(file)
+      path = mkpath(file)
+      sh "test ! -d #{path} && cp -r SERVICE_ROOT/#{file} SERVICE_PREFIX", false
+    end
+
     def expect(out)
       @expect_output = out
     end
