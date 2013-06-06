@@ -117,7 +117,8 @@ HSR_VAR_1=`cat SERVICE_PREFIX/../Redis/.ports`
 test ! -f SERVICE_PREFIX/service.conf && printf '
 [some]
 config.port = %s
-config.redis.port = %s' $HSR_VAR_0 $HSR_VAR_1 $USER > SERVICE_PREFIX/service.conf
+config.redis.port = %s
+config.user = %s' $HSR_VAR_0 $HSR_VAR_1 $USER > SERVICE_PREFIX/service.conf
 "
   }
 ```
