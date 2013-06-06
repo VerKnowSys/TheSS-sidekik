@@ -13,7 +13,7 @@
     },
     {
       "type": "LogStash",
-      "upd": true,
+      "udp": true,
       "redis": true
     }
   ]

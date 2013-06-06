@@ -2,7 +2,7 @@ addon "LogStash" do |a|
   a.software_name "Logstash"
   a.watch_port false
 
-  a.option :upd, false
+  a.option :udp, false
   a.option :redis, true
   a.option :elasticsearch, true
 
@@ -48,7 +48,7 @@ addon "LogStash" do |a|
     if opt[:elasticsearch]
       vars << read_var(".domain", "ElasticSearch")
       vars << "USER"
-      input << %Q|
+      output << %Q|
         elasticsearch {
           host    => "%s"
           cluster => "%s"
