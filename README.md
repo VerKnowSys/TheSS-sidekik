@@ -48,7 +48,7 @@ $ bin/hsr app.json
 ### Basics
 ```ruby
 addon "AddonName" do |a|
-  a.software_name = "MySoft"
+  a.software_name "MySoft"
 
   a.start do
     sh "run-something"
@@ -63,7 +63,7 @@ end
 ### Options
 ```ruby
 addon "AddonName" do |a|
-  a.option :max_hussars  # define option
+  a.option :max_hussars, 300  # define option with default value
 
   a.start do
     sh "run --max-hussars=#{opt[:max_hussars]}" # use opt[:option_name]
