@@ -25,19 +25,19 @@ module Hussar
     FIELDS.each do |field, type|
       case type
       when :string, :bool
-        class_eval <<-EOS, __FILE__, __LINE__
+        class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(value)
             @fields[:#{field}] = value
           end
         EOS
       when :shell
-        class_eval <<-EOS, __FILE__, __LINE__
+        class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
             @fields[:#{field}] = Shell.new(&block)
           end
         EOS
       when :cron
-        class_eval <<-EOS, __FILE__, __LINE__
+        class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
             @fields[:#{field}] = Cron.new(&block)
           end
