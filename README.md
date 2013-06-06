@@ -84,7 +84,7 @@ All file paths will be relative to `SERVICE_PREFIX`
 - `backup(file)` - Copy file to `FILE-CURRENT_TIME.backup`
 - `expect(out)` - Define excepted output for validation
 - `info(msg)` - Just a print
-- `daemonize(cmd)` - Put `cmd` in background using double bg (&) trick - it will save process pid file to SERVICE_PREFIX/service.pid
+- `daemonize(cmd)` - Put `cmd` in background using double bg (&) trick - it will save process pid file to `SERVICE_PREFIX/service.pid`
 
 
 ### VAR abstraction
