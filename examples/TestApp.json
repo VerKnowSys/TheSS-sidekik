@@ -10,6 +10,11 @@
     },
     {
       "type": "ElasticSearch"
+    },
+    {
+      "type": "LogStash",
+      "upd": true,
+      "redis": true
     }
   ]
 }
