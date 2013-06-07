@@ -25,6 +25,12 @@ describe "Gen" do
     end
   end
 
+  it "should handle :background option" do
+    addon.generate["start"]["commands"].tap do |i|
+      i.must_include "test-bg &"
+    end
+  end
+
   it "should handle touch" do
     addon.generate["validate"]["commands"].tap do |i|
       i.must_include "touch SERVICE_PREFIX/test-file"

@@ -11,7 +11,7 @@ addon "Mysql" do |a|
         --defaults-file=SERVICE_PREFIX/service.conf \\
         --skip-grant-tables \\
         -C utf8
-    }
+    }, :background
   end
 
   a.validate do

@@ -6,6 +6,7 @@ addon "Test" do |a|
   a.start do
     sh "test-log"
     sh "test-nolog", :nolog
+    sh "test-bg", :background, :nolog
     sh "test-opt1 #{opt[:opt1]}"
     sh "test-opt2 #{opt[:opt2]}"
   end

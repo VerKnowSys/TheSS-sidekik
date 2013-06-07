@@ -2,6 +2,7 @@ addon "Memcached" do |a|
   a.software_name "Memcached"
 
   a.start do
+    info "Launching Memcached"
     sh %Q{
       SERVICE_ROOT/exports/memcached \\
         -l SERVICE_ADDRESS \\

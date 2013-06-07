@@ -14,7 +14,7 @@ addon "ElasticSearch" do |a|
         -Des.bootstrap.mlockall=true \\
         -Des.cluster.name=$USER \\
         -Des.path.home=SERVICE_PREFIX
-    }
+    }, :background
   end
 
   a.validate do

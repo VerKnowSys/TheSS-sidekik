@@ -75,8 +75,10 @@ end
 
 All file paths will be relative to `SERVICE_PREFIX`
 
-- `sh(cmd, log = true)` - Execute command with output redirected to `service.log`
-  - Use `sh "cmd", :nolog` to disable output redirection
+- `sh(cmd, *args)` - Execute command with output redirected to `service.log`
+  - Available `args`
+     - `:nolog` - disable output redirection
+     - `:background` - add `&` at the end of command
 - `rake(*tasks)` - Run rake task `rake "task1", "task2"`
 - `mkdir(dir, chmod = nil)` - Create new directory + optional chmod
 - `file(name, body)` - Create a file if not exists

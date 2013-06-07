@@ -27,9 +27,10 @@ module Hussar
       @options
     end
 
-    def sh(cmd, log = true)
+    def sh(cmd, *args)
       cmd = "#{Hussar.strip_margin(cmd)}".chomp
-      cmd << " 2>&1 >> #{mkpath("service.log")}" unless log == :nolog
+      cmd << " 2>&1 >> #{mkpath("service.log")}" unless args.include?(:nolog)
+      cmd << " &" if args.include?(:background)
       @commands << cmd
     end
 
@@ -54,7 +55,7 @@ module Hussar
       path = mkpath(name)
       content = Hussar.strip_margin(body)
       vars_sh = vars.join(" ")
-      sh "test ! -f #{path} && printf '\n#{content}' #{vars_sh} > #{path}", :nolog
+      sh "test ! -f #{path} && printf '\n#{content}\n' #{vars_sh} > #{path}", :nolog
     end
 
     def touch(file)
@@ -80,7 +81,7 @@ module Hussar
     end
 
     def info(msg)
-      sh "printf '#{msg}'\n"
+      sh "printf '#{msg}\n'"
     end
 
     def read_var(file, service = nil)
