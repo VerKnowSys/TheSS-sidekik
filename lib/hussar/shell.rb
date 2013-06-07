@@ -106,7 +106,7 @@ module Hussar
 
     def mkpath(f, service = nil)
       if service
-        "SERVICE_PREFIX/../#{service}/#{f}"
+        "SERVICE_PREFIX/../#{opt[:service_prefix]}#{service}/#{f}"
       else
         "SERVICE_PREFIX/#{f}"
       end

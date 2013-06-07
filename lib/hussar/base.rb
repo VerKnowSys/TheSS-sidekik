@@ -29,13 +29,14 @@ module Hussar
   def self.make_me_cookie(config_file, options = {})
     app = IndifferentHash.new(JSON.load(File.read(config_file)))
     name = app[:name]
-    prefix = options[:with_prefix] ? "#{options[:with_prefix]}-" : ""
+    prefix = options[:prefix] ? "#{options[:prefix]}-" : ""
 
     puts "--> Generating new application #{name}"
     dir = options[:output_dir] || name
     FileUtils.mkdir_p(dir)
 
     (app["addons"] || []).each do |conf|
+      conf[:service_prefix] = prefix
       type = conf.delete(:type)
       addon = Hussar::Addon[type] || (raise "Addon #{type} not found!")
       puts "--> Generating igniter for addon #{type} with #{conf}"
