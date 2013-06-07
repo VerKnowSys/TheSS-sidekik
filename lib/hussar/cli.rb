@@ -16,8 +16,10 @@ module Hussar
     end
 
     desc "Generate igniters for app"
+    option :with_prefix, :default => nil
+    option :output_dir, :default => nil
     def gen(file)
-      Hussar.make_me_cookie(file)
+      Hussar.make_me_cookie(file, options)
     end
   end
 end

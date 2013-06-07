@@ -26,18 +26,20 @@ module Hussar
     lines.drop_while {|e| e =~ /^\s*$/ }
   end
 
-  def self.make_me_cookie(config_file)
+  def self.make_me_cookie(config_file, options = {})
     app = IndifferentHash.new(JSON.load(File.read(config_file)))
     name = app[:name]
+    prefix = options[:with_prefix] ? "#{options[:with_prefix]}-" : ""
 
     puts "--> Generating new application #{name}"
-    FileUtils.mkdir_p(name)
+    dir = options[:output_dir] || name
+    FileUtils.mkdir_p(dir)
 
     (app["addons"] || []).each do |conf|
       type = conf.delete(:type)
       addon = Hussar::Addon[type] || (raise "Addon #{type} not found!")
       puts "--> Generating igniter for addon #{type} with #{conf}"
-      File.open(File.join(name, "#{type}.json"), "w") {|f|
+      File.open(File.join(dir, "#{prefix}#{type}.json"), "w") {|f|
         f.puts Hussar.to_json(addon.generate(conf))
       }
     end
