@@ -24,6 +24,9 @@
     },
     {
       "type": "Postgresql"
+    },
+    {
+      "type": "Nginx"
     }
   ]
 }
