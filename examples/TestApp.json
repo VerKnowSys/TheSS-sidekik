@@ -15,6 +15,9 @@
       "type": "LogStash",
       "udp": true,
       "redis": true
+    },
+    {
+      "type": "Memcached"
     }
   ]
 }
