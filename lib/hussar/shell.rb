@@ -3,6 +3,7 @@ module Hussar
     def reset
       @commands = []
       @expect_output = nil
+      @expect_timeout = nil
       @cron = nil
       @var_count = 0
     end
@@ -12,6 +13,7 @@ module Hussar
       h = {}
       h[:commands] = ([""] + @commands + [""]).join("\n")
       h[:expectOutput] = @expect_output if @expect_output
+      h[:expectOutputTimeout] = @expect_timeout if @expect_timeout
       h[:cronEntry] = @cron if @cron
       h
     end
@@ -65,8 +67,9 @@ module Hussar
       sh "(#{cmd} >> SERVICE_PREFIX/service.log 2>&1 < /dev/null & echo $! > SERVICE_PREFIX/service.pid) &", :nolog
     end
 
-    def expect(out)
+    def expect(out, timeout = nil)
       @expect_output = out
+      @expect_timeout = timeout
     end
 
     def info(msg)

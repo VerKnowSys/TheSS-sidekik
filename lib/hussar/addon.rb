@@ -6,7 +6,9 @@ module Hussar
       :scheduler_actions => :cron,
       :install        => :shell,
       :start          => :shell,
+      :stop           => :shell,
       :validate       => :shell,
+      :baby_sitter    => :shell,
       :dependencies   => :dependencies,
       :ports_pool     => :ports
     }
