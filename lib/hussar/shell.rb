@@ -77,8 +77,14 @@ module Hussar
       name = "HSR_VAR_#{@var_count}"
       path = mkpath(file, service)
       sh "#{name}=`cat #{path}`", :nolog
+      test_var(name, file, service)
       @var_count += 1
       "$#{name}"
+    end
+
+    def test_var(name, file, service = nil)
+      msg = "File #{file} of service #{service} is empty, exiting."
+      sh %Q{test "$#{name}" = "" && echo '#{msg}' && exit 1}
     end
 
     def current_user

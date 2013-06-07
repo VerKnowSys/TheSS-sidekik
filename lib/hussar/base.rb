@@ -36,7 +36,7 @@ module Hussar
     FileUtils.mkdir_p(dir)
 
     (app["addons"] || []).each do |conf|
-      conf[:service_prefix] = prefix
+      conf[:service_prefix] = options[:prefix]
       type = conf.delete(:type)
       addon = Hussar::Addon[type] || (raise "Addon #{type} not found!")
       puts "--> Generating igniter for addon #{type} with #{conf}"
