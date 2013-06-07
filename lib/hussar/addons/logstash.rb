@@ -2,6 +2,12 @@ addon "LogStash" do |a|
   a.software_name "Logstash"
   a.watch_port false
 
+  a.ports_pool do
+    no_ports
+
+    port if opt[:udp]
+  end
+
   a.option :udp, false
   a.option :redis, true
   a.option :elasticsearch, true

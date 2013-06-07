@@ -10,6 +10,7 @@ require "hussar/addon"
 require "hussar/shell"
 require "hussar/cron"
 require "hussar/dependencies"
+require "hussar/ports"
 
 # Load addons
 include Hussar::DSL

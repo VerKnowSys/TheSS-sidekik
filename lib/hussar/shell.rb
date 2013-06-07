@@ -91,8 +91,14 @@ module Hussar
       "$USER"
     end
 
-    def service_port(service = nil)
-      service ? read_var(".ports", service) : "SERVICE_PORT"
+    def service_port(*args)
+      n = args.find {|e| e.is_a?(Fixnum) } || 0
+      service = args.find {|e| e.is_a?(String) }
+      if service
+        read_var(".ports/#{n}", service)
+      else
+        n == 0 ? "SERVICE_PORT" : "SERVICE_PORT#{n}"
+      end
     end
 
     def service_domain(service = nil)

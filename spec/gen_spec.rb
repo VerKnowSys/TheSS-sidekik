@@ -75,4 +75,11 @@ describe "Gen" do
       i.must_equal ["TestApp-Dep1"]
     end
   end
+
+  it "should handle port requirements based on options" do
+    addon.generate(:opt1 => false, :opt2 => false)["portsPool"].must_equal 0
+    addon.generate(:opt1 => true,  :opt2 => false)["portsPool"].must_equal 1
+    addon.generate(:opt1 => false, :opt2 => true)["portsPool"].must_equal 5
+    addon.generate(:opt1 => true,  :opt2 => true)["portsPool"].must_equal 6
+  end
 end

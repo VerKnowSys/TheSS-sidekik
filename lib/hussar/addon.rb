@@ -7,16 +7,17 @@ module Hussar
       :install        => :shell,
       :start          => :shell,
       :validate       => :shell,
-      :dependencies   => :dependencies
+      :dependencies   => :dependencies,
+      :ports_pool     => :ports
     }
 
     attr_accessor :name
 
     def initialize(name, &block)
       @name = name
-      @fields = {}
+      @block = block
       @default_options = IndifferentHash.new
-      block.call(self)
+      reset
     end
 
     def default_options
@@ -49,7 +50,19 @@ module Hussar
             @fields[:#{field}] = Dependencies.new(&block)
           end
         EOS
+      when :ports
+        class_eval <<-EOS, __FILE__, __LINE__ + 1
+          def #{field}(&block)
+            @fields[:#{field}] = Ports.new(&block)
+          end
+        EOS
       end
+    end
+
+    def require_port!(n = 1)
+      puts "REQUIRE_PORT #{n}"
+      @fields[:ports_pool] ||= 0
+      @fields[:ports_pool] += n
     end
 
     def default_fields
@@ -66,9 +79,14 @@ module Hussar
       end
     end
 
-    def generate(options = {})
-      options = @default_options.merge(options)
+    def reset
+      @fields = {}
+      @block.call(self)
+    end
 
+    def generate(options = {})
+      reset
+      options = @default_options.merge(options)
       igniter = default_fields.merge(@fields).inject({}) do |hash, (field, gen_or_value)|
         value = if gen_or_value.respond_to?(:generate)
           gen_or_value.generate(options)

@@ -115,27 +115,20 @@ In case of dynamicly generated config files where you need to read .ports file t
   end
 ```
 
-### Dependencies
-
-```ruby
-  a.option :use_dep2, false
-
-  a.dependencies do
-    dependency "Dep1"
-    dependency "Dep2" if opt[:use_dep2]
-  end
-```
-
-
 This will create the following igniter:
 
 ```json
   "validate": {
     "commands": "
-HSR_VAR_0=`cat SERVICE_PREFIX/../Redis/.ports`
+HSR_VAR_0=`cat SERVICE_PREFIX/../Redis/.ports/0`
+test \\"$HSR_VAR_0\\" = \\"\\" && echo 'File .ports/0 of service Redis is empty, exiting.' && exit 1 2>&1 >> SERVICE_PREFIX/service.log
 HSR_VAR_1=`cat SERVICE_PREFIX/../Nginx/.domain`
+test \\"$HSR_VAR_1\\" = \\"\\" && echo 'File .domain of service Redis is empty, exiting.' && exit 1 2>&1 >> SERVICE_PREFIX/service.log
 HSR_VAR_2=`cat SERVICE_PREFIX/.foo`
+test \\"$HSR_VAR_2\\" = \\"\\" && echo 'File .foo of service is empty, exiting.' && exit 1 2>&1 >> SERVICE_PREFIX/service.log
 HSR_VAR_3=`cat SERVICE_PREFIX/../Mysql/.bar`
+test \\"$HSR_VAR_3\\" = \\"\\" && echo 'File .bar of service Mysql is empty, exiting.' && exit 1 2>&1 >> SERVICE_PREFIX/service.log
+
 test ! -f SERVICE_PREFIX/service.conf && printf '
 [some]
 config.port = %s
@@ -147,6 +140,30 @@ config.user = %s' SERVICE_PORT $HSR_VAR_0 $HSR_VAR_1 $HSR_VAR_2 $HSR_VAR_3 $USER
 "
   }
 ```
+
+Possible calls:
+
+- `service_port` - This service default port
+- `service_port(5)` - This service port no 5
+- `service_port("Redis")` - Default port for service "Redis"
+- `service_port("Redis", 7)` - Port no 7 for service "Redis"
+- `service_domain` - This service domain
+- `service_domain("Mysql")` - "Mysql" service domain
+- `read_var(".foo")` - read `.foo` file for this service
+- `read_var(".foo", "Redis")` - read `.foo` file for service "Redis"
+
+
+### Dependencies
+
+```ruby
+  a.option :use_dep2, false
+
+  a.dependencies do
+    dependency "Dep1"
+    dependency "Dep2" if opt[:use_dep2]
+  end
+```
+
 
 ### Scheduler actions
 
@@ -161,6 +178,17 @@ Multiple `cron` blocks allowed
     cron "*/2 * * * * ?" do
       touch "database/database.test"
     end
+  end
+```
+
+
+### Ports
+
+```ruby
+  a.ports_pool do
+    no_ports            # set required ports to 0
+    ports 5             # require 5 ports
+    ports 2 if opt[:a]  # add one more port if options :a is specified
   end
 ```
 

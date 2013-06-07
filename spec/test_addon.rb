@@ -9,6 +9,13 @@ addon "Test" do |a|
     dependency "Dep2" if opt[:use_dep2]
   end
 
+  a.ports_pool do
+    no_ports
+
+    port    if opt[:opt1]
+    ports 5 if opt[:opt2]
+  end
+
   a.start do
     sh "test-log"
     sh "test-nolog", :nolog
