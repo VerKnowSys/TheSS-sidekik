@@ -1,5 +1,5 @@
 addon "ElasticSearch" do |a|
-  a.software_name "ElasticSearch"
+  a.software_name "Elasticsearch"
 
   a.start do
     info "Launching ElastcSearch"
