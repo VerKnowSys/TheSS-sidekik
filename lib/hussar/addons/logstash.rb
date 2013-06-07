@@ -9,7 +9,7 @@ addon "LogStash" do |a|
   a.start do
     info "Launching Logstash"
 
-    daemonize "SERVICE_ROOT/exports/logstash agent -f SERVICE_PREFIX/config.conf"
+    daemonize "SERVICE_ROOT/exports/logstash agent -f SERVICE_PREFIX/service.conf"
   end
 
   a.validate do
