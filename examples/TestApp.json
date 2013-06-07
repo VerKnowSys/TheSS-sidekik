@@ -18,6 +18,12 @@
     },
     {
       "type": "Memcached"
+    },
+    {
+      "type": "Mongodb"
+    },
+    {
+      "type": "Postgresql"
     }
   ]
 }
