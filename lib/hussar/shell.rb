@@ -28,7 +28,7 @@ module Hussar
     end
 
     def sh(cmd, log = true)
-      cmd = "#{Hussar.strip_margin(cmd)}"
+      cmd = "#{Hussar.strip_margin(cmd)}".chomp
       cmd << " 2>&1 >> #{mkpath("service.log")}" unless log == :nolog
       @commands << cmd
     end
