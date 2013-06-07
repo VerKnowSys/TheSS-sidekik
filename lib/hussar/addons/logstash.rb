@@ -6,6 +6,11 @@ addon "LogStash" do |a|
   a.option :redis, true
   a.option :elasticsearch, true
 
+  a.dependencies do
+    dependency "Redis" if opt[:redis]
+    dependency "ElasticSearch" if opt[:elasticsearch]
+  end
+
   a.start do
     info "Launching Logstash"
 

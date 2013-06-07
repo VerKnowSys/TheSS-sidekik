@@ -115,6 +115,17 @@ In case of dynamicly generated config files where you need to read .ports file t
   end
 ```
 
+### Dependencies
+
+```ruby
+  a.option :use_dep2, false
+
+  a.dependencies do
+    dependency "Dep1"
+    dependency "Dep2" if opt[:use_dep2]
+  end
+```
+
 
 This will create the following igniter:
 

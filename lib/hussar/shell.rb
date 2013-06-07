@@ -1,11 +1,6 @@
 module Hussar
-  class Shell
-    def initialize(&block)
-      @block = block
-      reset!
-    end
-
-    def reset!
+  class Shell < Inner
+    def reset
       @commands = []
       @expect_output = nil
       @cron = nil
@@ -13,18 +8,12 @@ module Hussar
     end
 
     def generate(options = {})
-      reset!
-      @options = options
-      instance_exec(&@block)
+      super
       h = {}
       h[:commands] = ([""] + @commands + [""]).join("\n")
       h[:expectOutput] = @expect_output if @expect_output
       h[:cronEntry] = @cron if @cron
       h
-    end
-
-    def opt
-      @options
     end
 
     def sh(cmd, *args)
@@ -106,7 +95,7 @@ module Hussar
 
     def mkpath(f, service = nil)
       if service
-        "SERVICE_PREFIX/../#{opt[:service_prefix]}#{service}/#{f}"
+        "SERVICE_PREFIX/../#{service_prefix}#{service}/#{f}"
       else
         "SERVICE_PREFIX/#{f}"
       end

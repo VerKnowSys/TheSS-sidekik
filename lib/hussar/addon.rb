@@ -6,7 +6,8 @@ module Hussar
       :scheduler_actions => :cron,
       :install        => :shell,
       :start          => :shell,
-      :validate       => :shell
+      :validate       => :shell,
+      :dependencies   => :dependencies
     }
 
     attr_accessor :name
@@ -40,6 +41,12 @@ module Hussar
         class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
             @fields[:#{field}] = Cron.new(&block)
+          end
+        EOS
+      when :dependencies
+        class_eval <<-EOS, __FILE__, __LINE__ + 1
+          def #{field}(&block)
+            @fields[:#{field}] = Dependencies.new(&block)
           end
         EOS
       end

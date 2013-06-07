@@ -61,4 +61,18 @@ describe "Gen" do
   it "should generate exactly the same config when invoked twice" do
     addon.generate.must_equal addon.generate
   end
+
+  it "should handle dependencies with correct prefix" do
+    addon.generate["dependencies"].tap do |i|
+      i.must_equal ["Dep1"]
+    end
+
+    addon.generate(:use_dep2 => true)["dependencies"].tap do |i|
+      i.must_equal ["Dep1", "Dep2"]
+    end
+
+    addon.generate(:service_prefix => "TestApp")["dependencies"].tap do |i|
+      i.must_equal ["TestApp-Dep1"]
+    end
+  end
 end

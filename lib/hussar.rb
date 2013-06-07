@@ -5,9 +5,11 @@ require "fileutils"
 require "hashie"
 
 require "hussar/base"
+require "hussar/inner"
 require "hussar/addon"
 require "hussar/shell"
 require "hussar/cron"
+require "hussar/dependencies"
 
 # Load addons
 include Hussar::DSL
