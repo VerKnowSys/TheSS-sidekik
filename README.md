@@ -186,9 +186,10 @@ Multiple `cron` blocks allowed
 
 ```ruby
   a.ports_pool do
-    no_ports            # set required ports to 0
-    ports 5             # require 5 ports
-    ports 2 if opt[:a]  # add one more port if options :a is specified
+    no_ports                    # set required ports to 0
+    ports 5                     # require 5 ports
+    ports 2 if opt[:allow_udp]  # add one more port if options :allow_udp is specified
+    ports 1 if opt[:allow_tcp]
   end
 ```
 
