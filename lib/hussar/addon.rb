@@ -7,6 +7,7 @@ module Hussar
       :install        => :shell,
       :start          => :shell,
       :stop           => :shell,
+      :reload         => :shell,
       :validate       => :shell,
       :baby_sitter    => :shell,
       :dependencies   => :dependencies,
