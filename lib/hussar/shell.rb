@@ -53,7 +53,7 @@ module Hussar
 
       path = mkpath(name)
       content = Hussar.strip_margin(body)
-      vars_sh = vars.map {|v| "$#{v}"}.join(" ")
+      vars_sh = vars.join(" ")
       sh "test ! -f #{path} && printf '\n#{content}' #{vars_sh} > #{path}", :nolog
     end
 
@@ -88,15 +88,19 @@ module Hussar
       path = mkpath(file, service)
       sh "#{name}=`cat #{path}`", :nolog
       @var_count += 1
-      name
+      "$#{name}"
+    end
+
+    def current_user
+      "$USER"
     end
 
     def service_port(service = nil)
-      read_var(".ports", service)
+      service ? read_var(".ports", service) : "SERVICE_PORT"
     end
 
     def service_domain(service = nil)
-      read_var(".domain", service)
+      service ? read_var(".domain", service) : "SERVICE_DOMAIN"
     end
 
     def mkpath(f, service = nil)

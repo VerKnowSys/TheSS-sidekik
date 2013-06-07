@@ -18,8 +18,8 @@ addon "LogStash" do |a|
     output = []
 
     if opt[:udp]
-      vars << read_var(".domain")
-      vars << read_var(".ports")
+      vars << service_domain
+      vars << service_port
       input << %Q|
         udp {
           host => "%s"
@@ -30,8 +30,8 @@ addon "LogStash" do |a|
     end
 
     if opt[:redis]
-      vars << read_var(".domain", "Redis")
-      vars << read_var(".ports", "Redis")
+      vars << service_domain("Redis")
+      vars << service_port("Redis")
       input << %Q|
         redis {
           debug   => true
@@ -46,8 +46,8 @@ addon "LogStash" do |a|
     end
 
     if opt[:elasticsearch]
-      vars << read_var(".domain", "ElasticSearch")
-      vars << "USER"
+      vars << service_domain("ElasticSearch")
+      vars << current_user
       output << %Q|
         elasticsearch {
           host    => "%s"

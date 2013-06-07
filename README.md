@@ -119,11 +119,10 @@ This will create the following igniter:
 ```json
   "validate": {
     "commands": "
-HSR_VAR_0=`cat SERVICE_PREFIX/.ports`
-HSR_VAR_1=`cat SERVICE_PREFIX/../Redis/.ports`
-HSR_VAR_2=`cat SERVICE_PREFIX/../Nginx/.domain`
-HSR_VAR_3=`cat SERVICE_PREFIX/.foo`
-HSR_VAR_4=`cat SERVICE_PREFIX/../Mysql/.bar`
+HSR_VAR_0=`cat SERVICE_PREFIX/../Redis/.ports`
+HSR_VAR_1=`cat SERVICE_PREFIX/../Nginx/.domain`
+HSR_VAR_2=`cat SERVICE_PREFIX/.foo`
+HSR_VAR_3=`cat SERVICE_PREFIX/../Mysql/.bar`
 test ! -f SERVICE_PREFIX/service.conf && printf '
 [some]
 config.port = %s
@@ -131,7 +130,7 @@ config.redis.port = %s
 config.nginx.domain = %s
 config.foo = %s
 config.bar = %s
-config.user = %s' $HSR_VAR_0 $HSR_VAR_1 $HSR_VAR_2 $HSR_VAR_3 $HSR_VAR_4 $USER > SERVICE_PREFIX/service.conf
+config.user = %s' SERVICE_PORT $HSR_VAR_0 $HSR_VAR_1 $HSR_VAR_2 $HSR_VAR_3 $USER > SERVICE_PREFIX/service.conf
 "
   }
 ```
