@@ -50,7 +50,7 @@ addon "Postgresql" do |a|
   end
 
   a.baby_sitter do
-    sh "SERVICE_ROOT/exports/pg_ctl -D SERVICE_PREFIX/database status"
+    sh "SERVICE_ROOT/exports/pg_ctl -D SERVICE_PREFIX/database status", :nolog
     expect "server is running", 60
   end
 end
