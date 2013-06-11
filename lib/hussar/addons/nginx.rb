@@ -3,7 +3,6 @@ addon "Nginx" do
     service do
       software_name "Nginx"
 
-
       bin = "SERVICE_ROOT/exports/nginx -c SERVICE_PREFIX/service.conf"
 
       start do
@@ -11,7 +10,7 @@ addon "Nginx" do
         sh "#{bin} && printf 'Nginx started\n'"
       end
 
-      validate do
+      configure do
         file "service.conf", <<-EOS
           worker_processes 2;
           events {
@@ -34,8 +33,10 @@ addon "Nginx" do
               }
           }
         EOS
+      end
 
-        sh "#{bin} -t && printf 'Ngins started\n'"
+      validate do
+        sh "#{bin} -t && printf 'Ngins config OK\n'"
       end
 
       reload do

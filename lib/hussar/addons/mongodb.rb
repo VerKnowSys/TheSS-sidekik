@@ -8,7 +8,7 @@ addon "Mongodb" do
         sh "SERVICE_ROOT/exports/mongod -f SERVICE_PREFIX/service.conf"
       end
 
-      validate do
+      configure do
         mkdir "database", 700
         file "service.conf", <<-EOS
           bind_ip = SERVICE_ADDRESS
@@ -20,6 +20,11 @@ addon "Mongodb" do
           unixSocketPrefix = SERVICE_PREFIX
           fork = true
         EOS
+      end
+
+      validate do
+        check_dir "database"
+        check_file "service.conf"
       end
     end
   end

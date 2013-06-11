@@ -16,7 +16,7 @@ addon "Mysql" do
         }, :background
       end
 
-      validate do
+      configure do
         mkdir "tmp", 700
         mkdir "database", 700
         file "service.conf", <<-EOS
@@ -61,6 +61,12 @@ addon "Mysql" do
           [isamchk]
           key_buffer = 16M
         EOS
+      end
+
+      validate do
+        check_dir "tmp"
+        check_dir "database"
+        check_file "service.conf"
       end
 
       scheduler_actions do

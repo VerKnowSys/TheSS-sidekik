@@ -26,7 +26,7 @@ addon "LogStash" do
         daemonize "SERVICE_ROOT/exports/logstash agent -f SERVICE_PREFIX/service.conf"
       end
 
-      validate do
+      configure do
         vars = []
         input = []
         output = []
@@ -81,6 +81,10 @@ addon "LogStash" do
           }
 
         EOS
+      end
+
+      validate do
+        check_file "service.conf"
       end
     end
   end

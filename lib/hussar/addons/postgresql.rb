@@ -13,7 +13,8 @@ addon "Postgresql" do
         }
       end
 
-      validate do
+      configure do
+        # This one needs to be guarded by 'test ! -d' to prevent remove database
         sh %Q{
           test ! -d SERVICE_PREFIX/database/base && \\
             SERVICE_ROOT/exports/initdb -D SERVICE_PREFIX/database && \\
@@ -41,6 +42,12 @@ addon "Postgresql" do
           logging_collector = true
           listen_addresses='SERVICE_DOMAIN'
         EOS
+      end
+
+      validate do
+        check_dir "database/base"
+        check_file "database/pg_hba.conf"
+        check_file "database/postgresql.conf"
       end
 
       stop do
