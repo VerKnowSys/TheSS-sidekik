@@ -1,22 +1,24 @@
 module Hussar
   class Service < Inner
-    FIELDS = {
-      :software_name  => :string,
-      :watch_port     => :bool,
-      :scheduler_actions => :cron,
+    PHASES = {
       :install        => :shell,
       :configure      => :shell,
       :start          => :shell,
       :stop           => :shell,
       :reload         => :shell,
       :validate       => :shell,
-      :baby_sitter    => :shell,
+      :baby_sitter    => :shell
+    }
+    FIELDS = PHASES.merge(
+      :software_name  => :string,
+      :watch_port     => :bool,
+      :scheduler_actions => :cron,
       :dependencies   => :dependencies,
       :ports_pool     => :ports
-    }
+    )
 
-    def initialize(name, &block)
-      @name = name
+    def initialize(include_default_fields = true, &block)
+      @include_default_fields = include_default_fields
       @fields = {}
       super(&block)
     end
@@ -57,9 +59,13 @@ module Hussar
     end
 
     def default_fields
-      {
-        :install => default_install
-      }
+      if @include_default_fields
+        {
+          :install => default_install
+        }
+      else
+        {}
+      end
     end
 
     def default_install

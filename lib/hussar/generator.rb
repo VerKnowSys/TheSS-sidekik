@@ -12,14 +12,19 @@ module Hussar
       if @services[name]
         raise "Service #{name} for addon #{addon.name} is already defined"
       else
-        @services[name] = Service.new(name, &block).generate!(@options)
+        @services[name] = Service.new(&block).generate!(@options)
       end
+    end
+
+    def app(&block)
+      @app = Service.new(false, &block).generate!(@options)
     end
 
     def generate!(*args)
       super
       {
-        :services => @services
+        :services => @services,
+        :app => @app
       }
     end
   end

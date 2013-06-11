@@ -27,27 +27,22 @@ module Hussar
   end
 
   def self.make_me_cookie(config_file, options = {})
-    app = IndifferentHash.new(JSON.load(File.read(config_file)))
-    name = app[:name]
-    prefix = options[:prefix] ? "#{options[:prefix]}-" : ""
+    config = IndifferentHash.new(JSON.load(File.read(config_file)))
 
-    puts "--> Generating new application #{name}"
-    dir = options[:output_dir] || name
+    app = App.new(config)
+    puts "--> Generating new application #{app.name}"
+    services = app.generate!(options)
+
+    dir = options[:output_dir] || app.name
+    prefix = options[:prefix] ? "#{options[:prefix]}-" : ""
     FileUtils.mkdir_p(dir)
 
-    (app["addons"] || []).each do |conf|
-      conf[:service_prefix] = options[:prefix]
-      type = conf.delete(:type)
-      addon = Hussar::Addon[type] || (raise "Addon #{type} not found!")
-      puts "--> Generating igniters for addon #{type} with #{conf}"
-
-      result = addon.generate!(conf)
-      result[:services].each do |name, data|
-        File.open(File.join(dir, "#{prefix}#{name}.json"), "w") {|f|
-          f.puts Hussar.to_json(data)
-        }
-      end
-
+    services.each do |name, data|
+      file = File.join(dir, "#{prefix}#{name}.json")
+      puts "--> Saving #{name} igniter to #{file}"
+      File.open(file, "w") {|f|
+        f.puts Hussar.to_json(data)
+      }
     end
   end
 

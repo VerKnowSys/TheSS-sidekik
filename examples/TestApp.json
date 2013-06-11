@@ -1,5 +1,9 @@
 {
   "name": "TestApp",
+  "env": {
+    "RAILS_ENV": "production",
+    "SENTRY_API_KEY": "imsorandomyoucantguessmenever"
+  },
   "addons": [
     {
       "type": "Mysql",

@@ -1,4 +1,6 @@
 addon "ElasticSearch" do
+  option :tire, true
+
   generate do
     service do
       software_name "Elasticsearch"
@@ -32,6 +34,17 @@ addon "ElasticSearch" do
         check_dir "data"
         check_dir "work"
         check_dir "logs"
+      end
+    end
+
+    if opts.tire?
+      app do
+        configure do
+          info "Generating Tire configuration for Elasticsearch"
+          file "app/config/initializers/tire_dynamic_es_port.rb", <<-EOS
+            Tire.configure { url ENV["ELASTICSEARCH_URL"] } if ENV["ELASTICSEARCH_URL"]
+          EOS
+        end
       end
     end
   end

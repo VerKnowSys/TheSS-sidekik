@@ -40,7 +40,7 @@ module Hussar
       end
 
       def [](name)
-        all[name]
+        all[name] || (raise "Addon #{type} not found!")
       end
     end
   end
