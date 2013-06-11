@@ -70,7 +70,7 @@ module Hussar
       end
     end
 
-    def generate!(opts = {})
+    def generate!(*args)
       super
 
       default_fields.merge(@fields).inject({}) do |hash, (field, gen_or_value)|

@@ -5,7 +5,7 @@ module Hussar
       @ports = 1
     end
 
-    def generate!(options = {})
+    def generate!(*args)
       super
       @ports
     end

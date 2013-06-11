@@ -11,13 +11,13 @@ addon "LogStash" do
       ports_pool do
         no_ports
 
-        port if opts[:udp]
+        port if opts.udp?
       end
 
 
       dependencies do
-        dependency "Redis" if opts[:redis]
-        dependency "ElasticSearch" if opts[:elasticsearch]
+        dependency "Redis" if opts.redis?
+        dependency "ElasticSearch" if opts.elasticsearch?
       end
 
       start do
@@ -31,7 +31,7 @@ addon "LogStash" do
         input = []
         output = []
 
-        if opts[:udp]
+        if opts.udp?
           vars << service_domain
           vars << service_port
           input << %Q|
@@ -43,7 +43,7 @@ addon "LogStash" do
           |
         end
 
-        if opts[:redis]
+        if opts.redis?
           vars << service_domain("Redis")
           vars << service_port("Redis")
           input << %Q|
@@ -59,7 +59,7 @@ addon "LogStash" do
           |
         end
 
-        if opts[:elasticsearch]
+        if opts.elasticsearch?
           vars << service_domain("ElasticSearch")
           vars << current_user
           output << %Q|

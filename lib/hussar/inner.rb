@@ -8,8 +8,8 @@ module Hussar
       @options
     end
 
-    def generate!(opts = {})
-      @options = opts
+    def generate!(options)
+      @options = options
       instance_exec(&@block)
     end
 

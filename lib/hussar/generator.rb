@@ -16,7 +16,7 @@ module Hussar
       end
     end
 
-    def generate!(options = {})
+    def generate!(*args)
       super
       {
         :services => @services

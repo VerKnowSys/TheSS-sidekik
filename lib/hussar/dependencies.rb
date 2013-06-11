@@ -5,7 +5,7 @@ module Hussar
       @dependencies = []
     end
 
-    def generate!(options = {})
+    def generate!(*args)
       super
       @dependencies.map {|e| "#{service_prefix}#{e}"}
     end

@@ -72,7 +72,7 @@ addon "AddonName" do
   generate do
     service do
       start do
-        sh "run --max-hussars=#{opts[:max_hussars]}" # use opts[:option_name]
+        sh "run --max-hussars=#{opts.max_hussars}" # use max_hussars options
       end
     end
   end
@@ -89,7 +89,7 @@ addon "Mongodb" do
       # master node configuration
     end
 
-    if opts[:replica]
+    if opts.replica?
       service do
         # replica node configuration
       end
@@ -189,7 +189,7 @@ Possible calls:
     service do
       dependencies do
         dependency "Dep1"
-        dependency "Dep2" if opts[:use_dep2]
+        dependency "Dep2" if opts.use_dep2?
       end
     end
   end
@@ -217,10 +217,10 @@ Multiple `cron` blocks allowed
 
 ```ruby
   ports_pool do
-    no_ports                    # set required ports to 0
-    ports 5                     # require 5 ports
-    ports 2 if opt[:allow_udp]  # add one more port if options :allow_udp is specified
-    ports 1 if opt[:allow_tcp]
+    no_ports                  # set required ports to 0
+    ports 5                   # require 5 ports
+    ports 2 if opt.allow_udp? # add one more port if options :allow_udp is specified
+    ports 1 if opt.allow_tcp?
   end
 ```
 

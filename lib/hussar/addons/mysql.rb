@@ -41,7 +41,7 @@ addon "Mysql" do
           thread_stack = 128K
           thread_cache_size = 8
           myisam-recover = BACKUP
-          max_connections = #{opts[:max_connections]}
+          max_connections = #{opts.max_connections}
           thread_concurrency = 10
           query_cache_limit = 1M
           query_cache_size = 16M

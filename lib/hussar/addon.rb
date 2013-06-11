@@ -1,4 +1,9 @@
 module Hussar
+  class Options < IndifferentHash
+    include Hashie::Extensions::MethodQuery
+    include Hashie::Extensions::MethodReader
+  end
+
   class Addon
     attr_accessor :name, :generator
     def initialize(name, &block)
@@ -8,7 +13,7 @@ module Hussar
     end
 
     def default_options
-      @default_options ||= IndifferentHash.new
+      @default_options ||= Options.new
     end
 
     def option(name, default = false)

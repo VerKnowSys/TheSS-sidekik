@@ -27,7 +27,7 @@ addon "Redis" do
           save 60 10000
           appendonly no
           appendfsync everysec
-          activerehashing #{opts[:activerehashing] ? 'yes' : 'no'}
+          activerehashing #{opts.activerehashing? ? 'yes' : 'no'}
           loglevel notice
           logfile SERVICE_PREFIX/service.log
         EOS

@@ -10,7 +10,7 @@ module Hussar
       @var_count = 0
     end
 
-    def generate!(options = {})
+    def generate!(*args)
       super
       h = {}
       h[:commands] = ([""] + @commands + [""]).join("\n")
