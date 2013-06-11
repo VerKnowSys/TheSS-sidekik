@@ -19,11 +19,19 @@ addon "ElasticSearch" do
         }, :background
       end
 
-      validate do
+      configure do
         cp_r_from_root "config"
         mkdir "data"
         mkdir "work"
         mkdir "logs"
+        env "ELASTICSEARCH_URL", "http://SERVICE_ADDRESS:SERVICE_PORT"
+      end
+
+      validate do
+        check_dir "config"
+        check_dir "data"
+        check_dir "work"
+        check_dir "logs"
       end
     end
   end

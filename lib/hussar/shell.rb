@@ -8,10 +8,12 @@ module Hussar
       @expect_timeout = nil
       @cron = nil
       @var_count = 0
+      @env_vars = {}
     end
 
     def generate!(*args)
       super
+      _env_vars_commands
       h = {}
       h[:commands] = ([""] + @commands + [""]).join("\n")
       h[:expectOutput] = @expect_output if @expect_output
@@ -125,6 +127,20 @@ module Hussar
         "SERVICE_PREFIX/../#{service_prefix}#{service}/#{f}"
       else
         "SERVICE_PREFIX/#{f}"
+      end
+    end
+
+    def env(var, content)
+      @env_vars[var] = content
+    end
+
+    def _env_vars_commands
+      unless @env_vars.empty?
+        path = mkpath("service.env")
+        tpl = @env_vars.keys.map {|k| "#{k}=%s"}.join("\n")
+        args = @env_vars.values.map {|v| "'#{v}'"}.join(" ")
+
+        sh "printf '#{tpl}' #{args} > #{path}", :nolog
       end
     end
   end
