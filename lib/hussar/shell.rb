@@ -48,7 +48,17 @@ module Hussar
       path = mkpath(name)
       content = Hussar.strip_margin(body)
       vars_sh = vars.join(" ")
-      sh "test ! -f #{path} && printf '\n#{content}\n' #{vars_sh} > #{path}", :nolog
+      sh "printf '\n#{content}\n' #{vars_sh} > #{path}", :nolog
+    end
+
+    def check_file(name)
+      path = mkpath(name)
+      sh "test ! -f #{path} && touch SERVICE_PREFIX/.configure", :nolog
+    end
+
+    def check_dir(name)
+      path = mkpath(name)
+      sh "test ! -d #{path} && touch SERVICE_PREFIX/.configure", :nolog
     end
 
     def touch(file)

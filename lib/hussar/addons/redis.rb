@@ -10,7 +10,7 @@ addon "Redis" do
         sh "SERVICE_ROOT/exports/redis-server SERVICE_PREFIX/service.conf"
       end
 
-      validate do
+      configure do
         mkdir "database"
         file "service.conf", <<-EOS
           # Default Redis service configuration
@@ -31,6 +31,11 @@ addon "Redis" do
           loglevel notice
           logfile SERVICE_PREFIX/service.log
         EOS
+      end
+
+      validate do
+        check_dir "database"
+        check_file "service.conf"
       end
 
       scheduler_actions do
