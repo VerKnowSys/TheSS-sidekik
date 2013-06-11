@@ -4,21 +4,25 @@ require File.expand_path("../test_addon", __FILE__)
 describe "Gen" do
   let(:addon) { Hussar::Addon["Test"] }
 
+  def gen(opts = {})
+    addon.generate!(opts)[:services]["Test"]
+  end
+
   it "should have list of options" do
     addon.default_options[:opt1].must_equal "x"
     addon.default_options[:opt2].must_equal 123
   end
 
   it "should have correct software name" do
-    addon.generate["softwareName"].must_equal "TestSoft"
+    gen["softwareName"].must_equal "TestSoft"
   end
 
   it "should have default install command" do
-    addon.generate["install"]["commands"].strip.must_equal "sofin get testsoft"
+    gen["install"]["commands"].strip.must_equal "sofin get testsoft"
   end
 
   it "should handle :nolog option" do
-    addon.generate["start"]["commands"].tap do |i|
+    gen["start"]["commands"].tap do |i|
       i.must_include "test-log 2>&1 >> SERVICE_PREFIX/service.log"
       i.must_include "test-nolog"
       i.wont_include "test-nolog 2>&1 >> SERVICE_PREFIX/service.log"
@@ -26,60 +30,60 @@ describe "Gen" do
   end
 
   it "should handle :background option" do
-    addon.generate["start"]["commands"].tap do |i|
+    gen["start"]["commands"].tap do |i|
       i.must_include "test-bg &"
     end
   end
 
   it "should handle touch" do
-    addon.generate["validate"]["commands"].tap do |i|
+    gen["validate"]["commands"].tap do |i|
       i.must_include "touch SERVICE_PREFIX/test-file"
     end
   end
 
   it "should handle mkdir" do
-    addon.generate["validate"]["commands"].tap do |i|
+    gen["validate"]["commands"].tap do |i|
       i.must_include "test ! -d SERVICE_PREFIX/test-dir && mkdir -p SERVICE_PREFIX/test-dir"
     end
   end
 
   it "should handle options" do
-    addon.generate["start"]["commands"].tap do |i|
+    gen["start"]["commands"].tap do |i|
       i.must_include "test-opt1 x"
       i.must_include "test-opt2 123"
     end
-    addon.generate(:opt1 => "y")["start"]["commands"].tap do |i|
+    gen(:opt1 => "y")["start"]["commands"].tap do |i|
       i.must_include "test-opt1 y"
       i.must_include "test-opt2 123"
     end
-    addon.generate(:opt1 => "z", :opt2 => 0)["start"]["commands"].tap do |i|
+    gen(:opt1 => "z", :opt2 => 0)["start"]["commands"].tap do |i|
       i.must_include "test-opt1 z"
       i.must_include "test-opt2 0"
     end
   end
 
   it "should generate exactly the same config when invoked twice" do
-    addon.generate.must_equal addon.generate
+    gen.must_equal gen
   end
 
   it "should handle dependencies with correct prefix" do
-    addon.generate["dependencies"].tap do |i|
+    gen["dependencies"].tap do |i|
       i.must_equal ["Dep1"]
     end
 
-    addon.generate(:use_dep2 => true)["dependencies"].tap do |i|
+    gen(:use_dep2 => true)["dependencies"].tap do |i|
       i.must_equal ["Dep1", "Dep2"]
     end
 
-    addon.generate(:service_prefix => "TestApp")["dependencies"].tap do |i|
+    gen(:service_prefix => "TestApp")["dependencies"].tap do |i|
       i.must_equal ["TestApp-Dep1"]
     end
   end
 
   it "should handle port requirements based on options" do
-    addon.generate(:opt1 => false, :opt2 => false)["portsPool"].must_equal 0
-    addon.generate(:opt1 => true,  :opt2 => false)["portsPool"].must_equal 1
-    addon.generate(:opt1 => false, :opt2 => true)["portsPool"].must_equal 5
-    addon.generate(:opt1 => true,  :opt2 => true)["portsPool"].must_equal 6
+    gen(:opt1 => false, :opt2 => false)["portsPool"].must_equal 0
+    gen(:opt1 => true,  :opt2 => false)["portsPool"].must_equal 1
+    gen(:opt1 => false, :opt2 => true)["portsPool"].must_equal 5
+    gen(:opt1 => true,  :opt2 => true)["portsPool"].must_equal 6
   end
 end

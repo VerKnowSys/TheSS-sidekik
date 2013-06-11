@@ -1,10 +1,11 @@
 module Hussar
   class Ports < Inner
-    def reset
+    def initialize(&block)
+      super
       @ports = 1
     end
 
-    def generate(options = {})
+    def generate!(options = {})
       super
       @ports
     end

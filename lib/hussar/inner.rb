@@ -4,18 +4,17 @@ module Hussar
       @block = block
     end
 
-    def opt
+    def opts
       @options
     end
 
-    def generate(options = {})
-      reset
-      @options = options
+    def generate!(opts = {})
+      @options = opts
       instance_exec(&@block)
     end
 
     def service_prefix
-      opt[:service_prefix] ? "#{opt[:service_prefix]}-" : ""
+      opts[:service_prefix] ? "#{opts[:service_prefix]}-" : ""
     end
   end
 end

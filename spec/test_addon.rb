@@ -1,39 +1,53 @@
-addon "Test" do |a|
-  a.software_name "TestSoft"
-  a.option :opt1, "x"
-  a.option :opt2, 123
-  a.option :use_dep2, false
+addon "Test" do
+  option :opt1, "x"
+  option :opt2, 123
+  option :use_dep2, false
 
-  a.dependencies do
-    dependency "Dep1"
-    dependency "Dep2" if opt[:use_dep2]
-  end
+  generate do
+    service do
 
-  a.ports_pool do
-    no_ports
+      software_name "TestSoft"
 
-    port    if opt[:opt1]
-    ports 5 if opt[:opt2]
-  end
+      dependencies do
+        dependency "Dep1"
+        dependency "Dep2" if opts[:use_dep2]
+      end
 
-  a.start do
-    sh "test-log"
-    sh "test-nolog", :nolog
-    sh "test-bg", :background, :nolog
-    sh "test-opt1 #{opt[:opt1]}"
-    sh "test-opt2 #{opt[:opt2]}"
-  end
+      ports_pool do
+        no_ports
 
-  a.validate do
-    touch "test-file"
-    mkdir "test-dir"
+        port    if opts[:opt1]
+        ports 5 if opts[:opt2]
+      end
+
+      start do
+        sh "test-log"
+        sh "test-nolog", :nolog
+        sh "test-bg", :background, :nolog
+        sh "test-opt1 #{opts[:opt1]}"
+        sh "test-opt2 #{opts[:opt2]}"
+      end
+
+      validate do
+        touch "test-file"
+        mkdir "test-dir"
+      end
+    end
   end
 end
 
-addon "Dep1" do |a|
-  a.software_name "Dep1"
+addon "Dep1" do
+  generate do
+    service do
+      software_name "Dep1"
+    end
+  end
 end
 
 addon "Dep2" do |a|
-  a.software_name "Dep2"
+  generate do
+    service do
+      software_name "Dep2"
+    end
+  end
 end

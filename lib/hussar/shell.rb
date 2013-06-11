@@ -1,6 +1,8 @@
 module Hussar
   class Shell < Inner
-    def reset
+
+    def initialize(&block)
+      super
       @commands = []
       @expect_output = nil
       @expect_timeout = nil
@@ -8,7 +10,7 @@ module Hussar
       @var_count = 0
     end
 
-    def generate(options = {})
+    def generate!(options = {})
       super
       h = {}
       h[:commands] = ([""] + @commands + [""]).join("\n")

@@ -1,82 +1,87 @@
-addon "LogStash" do |a|
-  a.software_name "Logstash"
-  a.watch_port false
+addon "LogStash" do
+  option :udp, false
+  option :redis, true
+  option :elasticsearch, true
 
-  a.ports_pool do
-    no_ports
+  generate do
+    service do
+      software_name "Logstash"
+      watch_port false
 
-    port if opt[:udp]
-  end
+      ports_pool do
+        no_ports
 
-  a.option :udp, false
-  a.option :redis, true
-  a.option :elasticsearch, true
+        port if opts[:udp]
+      end
 
-  a.dependencies do
-    dependency "Redis" if opt[:redis]
-    dependency "ElasticSearch" if opt[:elasticsearch]
-  end
 
-  a.start do
-    info "Launching Logstash"
+      dependencies do
+        dependency "Redis" if opts[:redis]
+        dependency "ElasticSearch" if opts[:elasticsearch]
+      end
 
-    daemonize "SERVICE_ROOT/exports/logstash agent -f SERVICE_PREFIX/service.conf"
-  end
+      start do
+        info "Launching Logstash"
 
-  a.validate do
-    vars = []
-    input = []
-    output = []
+        daemonize "SERVICE_ROOT/exports/logstash agent -f SERVICE_PREFIX/service.conf"
+      end
 
-    if opt[:udp]
-      vars << service_domain
-      vars << service_port
-      input << %Q|
-        udp {
-          host => "%s"
-          port => %s
-          type => "udp"
-        }
-      |
+      validate do
+        vars = []
+        input = []
+        output = []
+
+        if opts[:udp]
+          vars << service_domain
+          vars << service_port
+          input << %Q|
+            udp {
+              host => "%s"
+              port => %s
+              type => "udp"
+            }
+          |
+        end
+
+        if opts[:redis]
+          vars << service_domain("Redis")
+          vars << service_port("Redis")
+          input << %Q|
+            redis {
+              debug   => true
+              host    => "%s"
+              port    => %s
+              format  => "json"
+              type    => "redis"
+              data_type => "channel"
+              key     => "logstash:channel"
+            }
+          |
+        end
+
+        if opts[:elasticsearch]
+          vars << service_domain("ElasticSearch")
+          vars << current_user
+          output << %Q|
+            elasticsearch {
+              host    => "%s"
+              cluster => "%s"
+            }
+          |
+        end
+
+
+        file "service.conf", vars, <<-EOS
+          input {
+            #{input.join("\n")}
+          }
+
+          output {
+            #{output.join("\n")}
+          }
+
+        EOS
+      end
     end
-
-    if opt[:redis]
-      vars << service_domain("Redis")
-      vars << service_port("Redis")
-      input << %Q|
-        redis {
-          debug   => true
-          host    => "%s"
-          port    => %s
-          format  => "json"
-          type    => "redis"
-          data_type => "channel"
-          key     => "logstash:channel"
-        }
-      |
-    end
-
-    if opt[:elasticsearch]
-      vars << service_domain("ElasticSearch")
-      vars << current_user
-      output << %Q|
-        elasticsearch {
-          host    => "%s"
-          cluster => "%s"
-        }
-      |
-    end
-
-
-    file "service.conf", vars, <<-EOS
-      input {
-        #{input.join("\n")}
-      }
-
-      output {
-        #{output.join("\n")}
-      }
-
-    EOS
   end
 end

@@ -39,16 +39,21 @@ module Hussar
       conf[:service_prefix] = options[:prefix]
       type = conf.delete(:type)
       addon = Hussar::Addon[type] || (raise "Addon #{type} not found!")
-      puts "--> Generating igniter for addon #{type} with #{conf}"
-      File.open(File.join(dir, "#{prefix}#{type}.json"), "w") {|f|
-        f.puts Hussar.to_json(addon.generate(conf))
-      }
+      puts "--> Generating igniters for addon #{type} with #{conf}"
+
+      result = addon.generate!(conf)
+      result[:services].each do |name, data|
+        File.open(File.join(dir, "#{prefix}#{name}.json"), "w") {|f|
+          f.puts Hussar.to_json(data)
+        }
+      end
+
     end
   end
 
   module DSL
-    def addon(name, &block)
-      Addon.register Addon.new(name, &block)
+    def addon(*args, &block)
+      Addon.register(Addon.new(*args, &block))
     end
   end
 end

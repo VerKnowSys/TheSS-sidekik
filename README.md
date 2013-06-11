@@ -39,7 +39,7 @@
 Then run
 
 ```
-$ bin/hsr app.json
+$ bin/hsr examples/TestApp.json
 ```
 
 
@@ -47,26 +47,53 @@ $ bin/hsr app.json
 
 ### Basics
 ```ruby
-addon "AddonName" do |a|
-  a.software_name "MySoft"
+addon "AddonName" do
+  generate do
+    service do
+      software_name "MySoft"
 
-  a.start do
-    sh "run-something"
-  end
+      start do
+        sh "run-something"
+      end
 
-  a.validate do
-    mkdir "database"
+      validate do
+        mkdir "database"
+      end
+    end
   end
 end
 ```
 
 ### Options
 ```ruby
-addon "AddonName" do |a|
-  a.option :max_hussars, 300  # define option with default value
+addon "AddonName" do
+  option :max_hussars, 300  # define option with default value
 
-  a.start do
-    sh "run --max-hussars=#{opt[:max_hussars]}" # use opt[:option_name]
+  generate do
+    service do
+      start do
+        sh "run --max-hussars=#{opts[:max_hussars]}" # use opts[:option_name]
+      end
+    end
+  end
+end
+```
+
+### Conditional services
+```ruby
+addon "Mongodb" do
+  option :replica, false
+
+  generate do
+    service do
+      # master node configuration
+    end
+
+    if opts[:replica]
+      service do
+        # replica node configuration
+      end
+    end
   end
 end
 ```
@@ -94,7 +121,7 @@ All file paths will be relative to `SERVICE_PREFIX`
 In case of dynamicly generated config files where you need to read .ports file there is a helper for that:
 
 ```ruby
-  a.validate do
+  validate do
     vars = []
     vars << service_port              # own port
     vars << service_port("Redis")     # other service port
@@ -156,11 +183,15 @@ Possible calls:
 ### Dependencies
 
 ```ruby
-  a.option :use_dep2, false
+  option :use_dep2, false
 
-  a.dependencies do
-    dependency "Dep1"
-    dependency "Dep2" if opt[:use_dep2]
+  generate do
+    service do
+      dependencies do
+        dependency "Dep1"
+        dependency "Dep2" if opts[:use_dep2]
+      end
+    end
   end
 ```
 
@@ -170,7 +201,7 @@ Possible calls:
 Multiple `cron` blocks allowed
 
 ```ruby
-  a.scheduler_actions do
+  scheduler_actions do
     cron "*/5 * * * * ?" do
       backup "database/database.rdf"
     end
@@ -185,7 +216,7 @@ Multiple `cron` blocks allowed
 ### Ports
 
 ```ruby
-  a.ports_pool do
+  ports_pool do
     no_ports                    # set required ports to 0
     ports 5                     # require 5 ports
     ports 2 if opt[:allow_udp]  # add one more port if options :allow_udp is specified

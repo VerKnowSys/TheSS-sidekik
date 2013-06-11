@@ -1,10 +1,11 @@
 module Hussar
   class Dependencies < Inner
-    def reset
+    def initialize(&block)
+      super
       @dependencies = []
     end
 
-    def generate(options = {})
+    def generate!(options = {})
       super
       @dependencies.map {|e| "#{service_prefix}#{e}"}
     end
