@@ -22,6 +22,8 @@ addon "Mongodb" do
           unixSocketPrefix = SERVICE_PREFIX
           fork = true
         EOS
+
+        env "MONGODB_URL", "SERVICE_ADDRESS:SERVICE_PORT"
       end
 
       validate do
@@ -41,7 +43,7 @@ addon "Mongodb" do
                 default:
                   database: main
                   hosts:
-                    - %s
+                    - "%s"
                   options:
                     safe: true
           EOS

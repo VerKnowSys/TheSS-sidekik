@@ -1,5 +1,3 @@
-require "awesome_print"
-
 module Hussar
   class App
     attr_accessor :name, :addons, :env, :prefix
