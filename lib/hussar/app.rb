@@ -24,13 +24,12 @@ module Hussar
         h
       end
 
-      template = Template[@template]
-      app_addon = template.generate!(hooks, @options)
-
-      addons << app_addon
       services = addons.inject({}) {|h,a| h.merge(a[:services]) }
 
-      services
+      template = Template[@template]
+      app_addon = template.generate!(services.keys, hooks, @options)
+
+      services.merge(app_addon[:services])
     end
 
 

@@ -11,7 +11,7 @@ addon "Nginx" do
       end
 
       configure do
-        file "service.conf", <<-EOS
+        file "service.conf", [service_port], <<-EOS
           worker_processes 2;
           events {
               worker_connections 1024;
@@ -24,7 +24,7 @@ addon "Nginx" do
               keepalive_timeout 270;
               error_log SERVICE_PREFIX/service.log;
               server {
-                  listen SERVICE_ADDRESS:#{service_port};
+                  listen SERVICE_ADDRESS:%s;
                   server_name SERVICE_DOMAIN SERVICE_ADDRESS;
                   location / {
                       root SERVICE_PREFIX/html;

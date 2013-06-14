@@ -7,11 +7,13 @@ module Hussar
 
     def generate!(*args)
       super
-      @dependencies.map {|e| "#{service_prefix}#{e}"}
+      @dependencies.map do |name, with_prefix|
+        with_prefix ? "#{service_prefix}#{name}" : name
+      end
     end
 
-    def dependency(name)
-      @dependencies << name
+    def dependency(name, with_prefix = true)
+      @dependencies << [name, with_prefix]
     end
   end
 end

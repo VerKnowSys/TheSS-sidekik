@@ -25,15 +25,15 @@
     },
     {
       "type": "Memcached"
-    },
+    }
     // {
     //   "type": "Mongodb"
     // },
-    {
-      "type": "Postgresql"
-    },
-    {
-      "type": "Nginx"
-    }
+    // {
+      // "type": "Postgresql"
+    // },
+    // {
+    //   "type": "Nginx"
+    // }
   ]
 }

@@ -19,7 +19,7 @@ addon "Mysql" do
       configure do
         mkdir "tmp", 700
         mkdir "database", 700
-        file "service.conf", <<-EOS
+        file "service.conf", [service_port], <<-EOS
           [mysqld_safe]
           socket = SERVICE_PREFIX/service.sock
           nice = 0
@@ -30,7 +30,7 @@ addon "Mysql" do
           [mysqld]
           pid-file = SERVICE_PREFIX/service.pid
           basedir = SERVICE_ROOT
-          port = #{service_port}
+          port = %s
           datadir = SERVICE_PREFIX/database
           tmpdir = SERVICE_PREFIX/tmp
           language = SERVICE_ROOT/share/english
@@ -74,6 +74,27 @@ addon "Mysql" do
           sh "echo 'Mysql what? Misa nie rozumić mysql crap.'", :nolog
         end
       end
+
+      # hooks do
+      #   before :build do
+      #     info "Generating Mysql configuration (database.yml)"
+
+      #     file :absolute, "$BUILD_DIR/config/database.yml", ["$RAILS_ENV", "MYSQL_URL"], <<-EOS
+      #       %s:
+      #         sessions:
+      #           default:
+      #             database: main
+      #             hosts:
+      #               - "%s"
+      #             options:
+      #               safe: true
+      #     EOS
+      #   end
+
+      #   after :build do
+      #     rake "db:migrate"
+      #   end
+      # end
     end
   end
 end

@@ -12,9 +12,9 @@ addon "Mongodb" do
 
       configure do
         mkdir "database", 700
-        file "service.conf", <<-EOS
+        file "service.conf", [service_port], <<-EOS
           bind_ip = SERVICE_ADDRESS
-          port = #{service_port}
+          port = %s
           dbpath = SERVICE_PREFIX/database
           logappend = true
           logpath = SERVICE_PREFIX/service.log

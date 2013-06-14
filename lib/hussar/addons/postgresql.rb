@@ -14,13 +14,15 @@ addon "Postgresql" do
       end
 
       configure do
+
         # This one needs to be guarded by 'test ! -d' to prevent remove database
         sh %Q{
           test ! -d SERVICE_PREFIX/database/base && \\
-            SERVICE_ROOT/exports/initdb -D SERVICE_PREFIX/database && \\
             rm -f SERVICE_PREFIX/database/pg_hba.conf && \\
-            rm -f SERVICE_PREFIX/database/postgresql.conf
+            rm -f SERVICE_PREFIX/database/postgresql.conf && \\
+            SERVICE_ROOT/exports/initdb -D SERVICE_PREFIX/database
         }
+
 
         file "database/pg_hba.conf", <<-EOS
           # Default Postgresql service configuration
@@ -30,8 +32,8 @@ addon "Postgresql" do
           host all all 0.0.0.0/0 password
         EOS
 
-        file "database/postgresql.conf", <<-EOS
-          port = #{service_port}
+        file "database/postgresql.conf", [service_port], <<-EOS
+          port = %s
           max_connections = 200
           checkpoint_segments = 24
           password_encryption = on
@@ -42,6 +44,8 @@ addon "Postgresql" do
           logging_collector = true
           listen_addresses='SERVICE_DOMAIN'
         EOS
+
+        chmod "0700", "database"
       end
 
       validate do

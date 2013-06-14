@@ -1,3 +1,5 @@
+require "digest/sha1"
+
 module Hussar
   class Shell < Inner
 
@@ -8,15 +10,26 @@ module Hussar
       @expect_timeout = nil
       @cron = nil
       @var_count = 0
+      @vars = []
       @env_vars = {}
     end
 
     def generate!(*args)
       super
       _env_vars_commands
+      @vars.each do |v|
+        sh_unshift v, :nolog
+      end
       h = {}
+
+      unless @expect_output
+        msg = "All done - #{Digest::SHA1.hexdigest(Time.now.to_s + rand.to_s)}"
+        @expect_output = msg
+        sh "echo '#{msg}'", :nolog
+      end
+
       h[:commands] = ([""] + @commands + [""]).join("\n")
-      h[:expectOutput] = @expect_output if @expect_output
+      h[:expectOutput] = @expect_output
       h[:expectOutputTimeout] = @expect_timeout if @expect_timeout
       h[:cronEntry] = @cron if @cron
       h
@@ -74,6 +87,10 @@ module Hussar
       cmd = "test ! -d #{path} && mkdir -p #{path}"
       cmd << " && chmod #{chmod} #{path}" if chmod
       sh cmd, :nolog
+    end
+
+    def chmod(mod, file)
+      sh "chmod -R #{mod} #{mkpath(file)}", :nolog
     end
 
     def file(*args)
@@ -151,7 +168,7 @@ module Hussar
     def read_var(file, service = nil)
       name = "HSR_VAR_#{@var_count}"
       path = mkpath(file, service)
-      sh "#{name}=`cat #{path}`", :nolog
+      @vars << "#{name}=`cat #{path}`"
       test_var(name, file, service)
       @var_count += 1
       "$#{name}"
@@ -234,7 +251,7 @@ module Hussar
       unless @env_vars.empty?
         path = mkpath("service.env")
         tpl = @env_vars.keys.map {|k| "export #{k}=%s"}.join("\n")
-        args = @env_vars.values.map {|v| "'#{v}'"}.join(" ")
+        args = @env_vars.values.map {|v| %Q|"#{v}"|}.join(" ")
 
         sh_unshift "printf '#{tpl}\n' #{args} > #{path}", :nolog
       end

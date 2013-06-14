@@ -12,11 +12,11 @@ addon "Redis" do
 
       configure do
         mkdir "database"
-        file "service.conf", <<-EOS
+        file "service.conf", [service_port], <<-EOS
           # Default Redis service configuration
           # bind SERVICE_DOMAIN
           bind SERVICE_ADDRESS
-          port #{service_port}
+          port %s
           pidfile SERVICE_PREFIX/service.pid
           dir SERVICE_PREFIX/database
           dbfilename database.rdf

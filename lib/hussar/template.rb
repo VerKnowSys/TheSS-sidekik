@@ -24,7 +24,7 @@ module Hussar
       @attrs[:start] = block
     end
 
-    def generate!(hooks = {}, opts = {})
+    def generate!(deps, hooks, opts = {})
       tpl = self
 
       addon = Addon.new(name) do
@@ -35,6 +35,10 @@ module Hussar
         generate do
           service do
             software_name tpl.attrs[:software_name]
+
+            dependencies do
+              deps.each {|d| dependency d, false }
+            end
 
             configure do
               task :build_start
