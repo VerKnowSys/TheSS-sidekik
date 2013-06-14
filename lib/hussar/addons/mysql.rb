@@ -30,7 +30,7 @@ addon "Mysql" do
           [mysqld]
           pid-file = SERVICE_PREFIX/service.pid
           basedir = SERVICE_ROOT
-          port = SERVICE_PORT
+          port = #{service_port}
           datadir = SERVICE_PREFIX/database
           tmpdir = SERVICE_PREFIX/tmp
           language = SERVICE_ROOT/share/english

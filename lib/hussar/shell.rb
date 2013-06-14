@@ -173,11 +173,7 @@ module Hussar
     def service_port(*args)
       n = args.find {|e| e.is_a?(Fixnum) } || 0
       service = args.find {|e| e.is_a?(String) }
-      if service
-        read_var(".ports/#{n}", service)
-      else
-        n == 0 ? "SERVICE_PORT" : "SERVICE_PORT#{n}"
-      end
+      read_var(".ports/#{n}", service)
     end
 
     def service_domain(service = nil)

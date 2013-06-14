@@ -16,7 +16,7 @@ addon "Redis" do
           # Default Redis service configuration
           # bind SERVICE_DOMAIN
           bind SERVICE_ADDRESS
-          port SERVICE_PORT
+          port #{service_port}
           pidfile SERVICE_PREFIX/service.pid
           dir SERVICE_PREFIX/database
           dbfilename database.rdf

@@ -31,7 +31,7 @@ addon "Postgresql" do
         EOS
 
         file "database/postgresql.conf", <<-EOS
-          port = SERVICE_PORT
+          port = #{service_port}
           max_connections = 200
           checkpoint_segments = 24
           password_encryption = on

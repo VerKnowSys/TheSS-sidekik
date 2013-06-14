@@ -12,7 +12,7 @@ addon "ElasticSearch" do
             -p SERVICE_PREFIX/service.pid \\
             -f -Xmx1g \\
             -Des.network.host=SERVICE_ADDRESS \\
-            -Des.http.port=SERVICE_PORT \\
+            -Des.http.port=#{service_port} \\
             -Des.index.storage.type=niofs \\
             -Des.max-open-files=true \\
             -Des.bootstrap.mlockall=true \\
@@ -26,7 +26,7 @@ addon "ElasticSearch" do
         mkdir "data"
         mkdir "work"
         mkdir "logs"
-        env "ELASTICSEARCH_URL", "http://SERVICE_ADDRESS:SERVICE_PORT"
+        env "ELASTICSEARCH_URL", "http://SERVICE_ADDRESS:#{service_port}"
       end
 
       validate do

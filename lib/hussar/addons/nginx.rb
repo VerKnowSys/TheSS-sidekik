@@ -24,7 +24,7 @@ addon "Nginx" do
               keepalive_timeout 270;
               error_log SERVICE_PREFIX/service.log;
               server {
-                  listen SERVICE_ADDRESS:SERVICE_PORT;
+                  listen SERVICE_ADDRESS:#{service_port};
                   server_name SERVICE_DOMAIN SERVICE_ADDRESS;
                   location / {
                       root SERVICE_PREFIX/html;

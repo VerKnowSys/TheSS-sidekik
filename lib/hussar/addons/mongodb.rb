@@ -14,7 +14,7 @@ addon "Mongodb" do
         mkdir "database", 700
         file "service.conf", <<-EOS
           bind_ip = SERVICE_ADDRESS
-          port = SERVICE_PORT
+          port = #{service_port}
           dbpath = SERVICE_PREFIX/database
           logappend = true
           logpath = SERVICE_PREFIX/service.log
@@ -23,7 +23,7 @@ addon "Mongodb" do
           fork = true
         EOS
 
-        env "MONGODB_URL", "SERVICE_ADDRESS:SERVICE_PORT"
+        env "MONGODB_URL", "SERVICE_ADDRESS:#{service_port}"
       end
 
       validate do

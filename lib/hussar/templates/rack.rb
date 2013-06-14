@@ -6,12 +6,12 @@ template "Rack" do
   end
 
   start do
+    env_load
     sh %{
       cd SERVICE_PREFIX/current
 
-      printf 'service port = %s\n' SERVICE_PORT #{log}
       bin/rackup \\
-        -p SERVICE_PORT \\
+        -p #{service_port} \\
         -E $RACK_ENV \\
         -D -P SERVICE_PREFIX/service.pid
     }, :background
