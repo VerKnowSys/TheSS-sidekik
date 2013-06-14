@@ -26,9 +26,9 @@
     {
       "type": "Memcached"
     },
-    {
-      "type": "Mongodb"
-    },
+    // {
+    //   "type": "Mongodb"
+    // },
     {
       "type": "Postgresql"
     },

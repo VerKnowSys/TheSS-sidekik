@@ -14,6 +14,6 @@ template "Rack" do
         -p SERVICE_PORT \\
         -E $RACK_ENV \\
         -D -P SERVICE_PREFIX/service.pid
-    }
+    }, :background
   end
 end
