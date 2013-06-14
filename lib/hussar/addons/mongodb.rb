@@ -33,7 +33,7 @@ addon "Mongodb" do
     if opts.mongoid?
       hooks do
         before :build do
-          info "--> Generating Mongoid configuration (mongoid.yml)"
+          info "Generating Mongoid configuration (mongoid.yml)"
 
           file :absolute, "$BUILD_DIR/config/mongoid.yml", ["$RAILS_ENV", "MONGODB_URL"], <<-EOS
             %s:

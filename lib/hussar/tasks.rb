@@ -1,6 +1,8 @@
 module Hussar
   Tasks = {}
   Tasks[:build_start] = lambda do
+    sh "echo '' > SERVICE_PREFIX/service.log", :nolog
+
     info ""
     info("*" * 50)
     info "    Starting new deployment"
@@ -24,63 +26,65 @@ module Hussar
       STAMP="$(date +'%Y-%m-%d-%Hh%Mm%S')-$[${RANDOM}%10000]"
       BUILD_DIR="SERVICE_PREFIX/build/$STAMP"
       RELEASE_DIR="SERVICE_PREFIX/releases/$STAMP"
-      printf '--> Building in %s\n' $BUILD_DIR #{log}
       mkdir -p $BUILD_DIR
     }
 
+    info "Building in %s", "$BUILD_DIR"
+
     # Update git repository
-    sh %Q{
-      if [ -d SERVICE_PREFIX/scm/objects ]; then
-        printf '--> Fetching new git commits\n' #{log}
-        pushd SERVICE_PREFIX/scm
-        git fetch #{opts.git_url} #{opts.git_branch}:#{opts.git_branch} --force #{log}
-        popd
-      else
-        printf '--> Cloning git repository #{opts.git_url}\n' #{log}
-        git clone #{opts.git_url} SERVICE_PREFIX/scm --bare #{log}
-      fi
-    }
+    sh "if [ -d SERVICE_PREFIX/scm/objects ]; then", :nolog
+      info "Fetching new git commits"
+      sh "pushd SERVICE_PREFIX/scm", :nolog
+      sh "git fetch #{opts.git_url} #{opts.git_branch}:#{opts.git_branch} --force", :validate
+      sh "popd", :nolog
+    sh "else", :nolog
+      info "Cloning git repository #{opts.git_url}"
+      sh "git clone #{opts.git_url} SERVICE_PREFIX/scm --bare", :validate
+    sh "fi", :nolog
 
     # Copy working directory to build dir
-    sh %Q{
-      pushd $BUILD_DIR
-      printf '--> Using git branch #{opts.git_branch}\n' #{log}
-      git clone SERVICE_PREFIX/scm . --recursive --branch #{opts.git_branch}
-      printf '--> Using this git commit\n' #{log}
-      git --no-pager log --format="%aN (%h):%n> %s" -n 1 #{log}
-      rm -rf "$BUILD_DIR/.git"
-      popd
-    }
+
+    chdir "$BUILD_DIR" do
+      info "Using git branch #{opts.git_branch}"
+      sh "git clone SERVICE_PREFIX/scm . --recursive --branch #{opts.git_branch}", :validate
+      info "Using this git commit"
+      sh "GIT_COMMIT=$(git --no-pager log --format='%aN (%h):%n> %s' -n 1)", :nolog
+      sh "echo $GIT_COMMIT"
+      sh 'rm -rf "$BUILD_DIR/.git"'
+    end
   end
 
   Tasks[:build_finish] = lambda do
     # Release app
-    sh %Q{
-      printf '--> Releasing %s to %s\n' $BUILD_DIR $RELEASE_DIR #{log}
-      mv $BUILD_DIR $RELEASE_DIR
-      rm -f SERVICE_PREFIX/current
-      ln -s $RELEASE_DIR SERVICE_PREFIX/current
-    }
+    info "Releasing %s to %s", "$BUILD_DIR", "$RELEASE_DIR"
+    sh "mv $BUILD_DIR $RELEASE_DIR", :validate
+    info "Linking %s to %s", "$RELEASE_DIR", "SERVICE_PREFIX/current"
+    sh "rm -f SERVICE_PREFIX/current", :validate
+    sh "ln -s $RELEASE_DIR SERVICE_PREFIX/current", :validate
+
+    notice "%s - Build Succeed\nCommit: %s", "#{service_name}", "$GIT_COMMIT"
+    sh "echo 'Build Succeed'", :nolog
+    expect "Build Succeed"
   end
 
   Tasks[:bundle] = lambda do
     # Install gems
+    sh "if [ -d SERVICE_PREFIX/current/bundle.installed ]; then", :nolog
+      info "Copying bundle.installed form previous release"
+      sh "cp -R SERVICE_PREFIX/current/bundle.installed bundle.installed", :validate
+    sh "fi", :nolog
+
+    info "Running bundle install"
     sh %Q{
-      pushd $BUILD_DIR
-      if [ -d SERVICE_PREFIX/current/bundle.installed ]; then
-        printf '--> Copying bundle.installed form previous release\n' #{log}
-        cp -R SERVICE_PREFIX/current/bundle.installed bundle.installed #{log}
-      fi;
-      printf '--> Running bundle install\n' #{log}
       SERVICE_ROOT/exports/bundle install \\
         --without development:test \\
         --path bundle.installed \\
         --deployment \\
         --binstubs #{log}
-      printf '--> Cleaning bundle\n' #{log}
-      SERVICE_ROOT/exports/bundle clean #{log}
-      popd
-    }
+    }, :validate
+
+    info "Cleaning bundle"
+    sh "SERVICE_ROOT/exports/bundle clean", :validate
   end
 
   Tasks[:assets] = lambda do

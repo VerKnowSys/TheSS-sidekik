@@ -22,15 +22,36 @@ module Hussar
       h
     end
 
+    def chdir(dir, &block)
+      debug "Entering %s", dir
+      sh "pushd $BUILD_DIR", :nolog
+      block.call
+      debug "Leaving %s", dir
+      sh "popd", :nolog
+    end
+
     def sh(cmd, *args)
       @commands << sh_make(cmd, *args)
     end
 
     def sh_make(cmd, *args)
       cmd = "#{Hussar.strip_margin(cmd)}".chomp
-      cmd << log unless args.include?(:nolog)
-      cmd << " &" if args.include?(:background)
-      cmd
+
+      command = ""
+      command << cmd
+      command << log unless args.include?(:nolog)
+      command << " &" if args.include?(:background)
+      if args.include?(:validate)
+        err =  %Q|\nif [ ! "$?" = "0" ]; then\n|
+        err << print(31, "!! Command failed !!") + " #{log}\n"
+        err << print(31, cmd.gsub("'", "\\'")) + " #{log}\n"
+        err << %Q|echo 'Build Failed'\n|
+        err << %Q|exit 1\n|
+        err << %Q|fi\n|
+        command << err
+      end
+
+      command
     end
 
     def sh_unshift(cmd, *args)
@@ -39,7 +60,8 @@ module Hussar
 
     def rake(*tasks)
       info "Running rake #{tasks.join(' ')}"
-      sh "rake #{tasks.join(' ')}"
+      sh "test -f bin/rake", :validate
+      sh "bin/rake #{tasks.join(' ')}", :validate
     end
 
     def mkdir(*args)
@@ -109,8 +131,17 @@ module Hussar
       @expect_timeout = timeout
     end
 
-    def info(msg)
-      sh "printf '#{msg}\n'"
+    def info(msg, *args)
+      @commands << sh_make(print(32, msg, *args))
+    end
+
+    def debug(msg, *args)
+      @commands << sh_make(print(34, msg, *args))
+    end
+
+    def print(color, msg, *args)
+      time = "$(date +'%Y-%m-%d-%Hh%Mm%S')"
+      "printf '\e[#{color}m%s - #{msg}\e[0m\n' #{time} #{args.join(" ")}"
     end
 
     def log
@@ -127,12 +158,16 @@ module Hussar
     end
 
     def test_var(name, file, service = nil)
-      msg = "File #{file} of service #{service} is empty, exiting."
-      sh %Q{test "$#{name}" = "" && echo '#{msg}' && exit 1}
+      # msg = "File #{file} of service #{service} is empty, exiting."
+      sh %Q{test ! "$#{name}" = ""}, :validate
     end
 
     def current_user
       "$USER"
+    end
+
+    def service_name
+      "$(basename SERVICE_PREFIX)"
     end
 
     def service_port(*args)
@@ -159,6 +194,29 @@ module Hussar
 
     def task(name)
       instance_exec(&Tasks[name])
+    end
+
+    def notification(msg, level, *args)
+      sh %Q{
+        NOTIFICATION_MSG="#{msg}"
+        NOTIFICATION_MSG_SHA=$(echo $NOTIFICATION_MSG | shasum | awk '{print $1}')
+        printf '#{msg}' #{args.join(" ")} > SERVICE_PREFIX/.notifications/$NOTIFICATION_MSG_SHA.#{level}
+      }, :nolog
+
+      # HipChat notification
+      # sh %Q{
+      #   if [ ! "$HIPCHAT_ROOM" = "" -a ! "$HIPCHAT_TOKEN" = "" ]; then
+      #     curl "https://api.hipchat.com/v1/rooms/message" -d room_id=$HIPCHAT_ROOM&auth_token=$HIPCHAT_TOKEN&message=$NOTIFICATION_MSG
+      #   fi;
+      # }, :nolog
+    end
+
+    def notice(msg, *args)
+      notification(msg, "notice", *args)
+    end
+
+    def error(msg, *args)
+      notification(msg, "error", *args)
     end
 
     def env(var, content)

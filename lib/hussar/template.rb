@@ -39,14 +39,16 @@ module Hussar
             configure do
               task :build_start
 
-              if hs = hooks[:before_build]
-                hs.each {|h| instance_exec(&h) }
-              end
+              chdir "$BUILD_DIR" do
+                if hs = hooks[:before_build]
+                  hs.each {|h| instance_exec(&h) }
+                end
 
-              instance_exec(&tpl.attrs[:build]) if tpl.attrs[:build]
+                instance_exec(&tpl.attrs[:build]) if tpl.attrs[:build]
 
-              if hs = hooks[:after_build]
-                hs.each {|h| instance_exec(&h) }
+                if hs = hooks[:after_build]
+                  hs.each {|h| instance_exec(&h) }
+                end
               end
 
               task :build_finish
