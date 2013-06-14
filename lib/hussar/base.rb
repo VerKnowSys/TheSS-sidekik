@@ -30,15 +30,13 @@ module Hussar
     config = IndifferentHash.new(JSON.load(File.read(config_file)))
 
     app = App.new(config)
-    puts "--> Generating new application #{app.name}"
-    services = app.generate!(options)
+    services = app.generate!
 
     dir = options[:output_dir] || app.name
-    prefix = options[:prefix] ? "#{options[:prefix]}-" : ""
     FileUtils.mkdir_p(dir)
 
     services.each do |name, data|
-      file = File.join(dir, "#{prefix}#{name}.json")
+      file = File.join(dir, "#{name}.json")
       puts "--> Saving #{name} igniter to #{file}"
       File.open(file, "w") {|f|
         f.puts Hussar.to_json(data)
@@ -49,6 +47,10 @@ module Hussar
   module DSL
     def addon(*args, &block)
       Addon.register(Addon.new(*args, &block))
+    end
+
+    def template(*args, &block)
+      Template.register(Template.new(*args, &block))
     end
   end
 end

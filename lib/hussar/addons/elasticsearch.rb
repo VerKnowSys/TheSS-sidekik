@@ -38,10 +38,10 @@ addon "ElasticSearch" do
     end
 
     if opts.tire?
-      app do
-        configure do
+      hooks do
+        before :build do
           info "Generating Tire configuration for Elasticsearch"
-          file "app/config/initializers/tire_dynamic_es_port.rb", <<-EOS
+          file :absolute, "$BUILD_DIR/config/initializers/tire_dynamic_es_port.rb", <<-EOS
             Tire.configure { url ENV["ELASTICSEARCH_URL"] } if ENV["ELASTICSEARCH_URL"]
           EOS
         end

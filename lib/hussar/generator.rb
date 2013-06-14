@@ -3,6 +3,7 @@ module Hussar
     def initialize(addon, &block)
       @addon = addon
       @services = {}
+      @hooks = {}
       super(&block)
     end
 
@@ -16,15 +17,22 @@ module Hussar
       end
     end
 
-    def app(&block)
-      @app = Service.new(false, &block).generate!(@options)
+    def hooks(&block)
+      @hooks = Hooks.new(&block).generate!(@options)
     end
 
-    def generate!(*args)
+    def generate!(options)
+      puts "--> Generating igniters for addon #{@addon.name} with #{options}"
+
       super
+
+      services = Hash[@services.map do |name, srv|
+        ["#{options[:service_prefix]}-#{name}", srv]
+      end]
+
       {
-        :services => @services,
-        :app => @app
+        :services => services,
+        :hooks => @hooks
       }
     end
   end

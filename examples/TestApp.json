@@ -1,9 +1,8 @@
 {
   "name": "TestApp",
-  "scm":{
-    "url": "git@github.com:teamon/sinatratest1.git",
-    "branch": "master"
-  },
+  "template": "Rack",
+  "git_url": "git@github.com:teamon/sinatratest1.git",
+  "git_branch": "master",
   "env": {
     "RACK_ENV": "production",
     "SENTRY_API_KEY": "imsorandomyoucantguessmenever"

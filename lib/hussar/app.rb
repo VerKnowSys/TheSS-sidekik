@@ -1,52 +1,47 @@
+require "awesome_print"
+
 module Hussar
   class App
     attr_accessor :name, :addons, :env, :prefix
 
     def initialize(config)
-      @name   = config[:name]
-      @addons = config[:addons] || []
-      @env    = config[:env]
-      @scm    = config[:scm]
+      @name     = config.delete(:name)
+      @template = config.delete(:template)
+      @addons   = config.delete(:addons) || []
 
-      @options = Options.new
+      @options = Options.new(config)
+      @options[:service_prefix] = @name
     end
 
-    def generate!(options = {})
-      addons = genenerate_addons(options)
-      services = addons.inject({}) {|h,a| h.merge(a[:services]) }
+    def generate!
+      puts "--> Generating new application #{@name}"
 
-      app = generate_app_service
+      addons = genenerate_addons(@options)
 
-      # Merge app phases
-      addons.each do |a|
-        if a[:app]
-          Service::PHASES.each do |name, _|
-            if a[:app][name] && a[:app][name][:commands]
-              app[name] ||= {:commands => ""}
-              app[name][:commands] += a[:app][name][:commands]
-            end
-          end
+      hooks = addons.inject(IndifferentHash.new) do |h,a|
+        a[:hooks].each do |name, hook|
+          h[name] ||= []
+          h[name] << hook
         end
+        h
       end
 
-      services[name] = app
+      template = Template[@template]
+      app_addon = template.generate!(hooks, @options)
+
+      addons << app_addon
+      services = addons.inject({}) {|h,a| h.merge(a[:services]) }
+
       services
     end
 
-    def generate_app_service
-      Addon["Base"].generate!(
-        "env"         => @env,
-        "git_url"     => @scm[:url],
-        "git_branch"  => @scm[:branch]
-      )[:services]["Base"]
-    end
+
 
     def genenerate_addons(options = {})
       @addons.map do |conf|
-        conf[:service_prefix] = options[:prefix]
+        conf[:service_prefix] = options[:service_prefix]
         type = conf.delete(:type)
         addon = Hussar::Addon[type]
-        puts "--> Generating igniters for addon #{type} with #{conf}"
         addon.generate!(conf)
       end
     end

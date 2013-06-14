@@ -38,24 +38,39 @@ module Hussar
     end
 
     def rake(*tasks)
+      info "Running rake #{tasks.join(' ')}"
       sh "rake #{tasks.join(' ')}"
     end
 
-    def mkdir(dir, chmod = nil)
-      path = mkpath(dir)
+    def mkdir(*args)
+      path, chmod = if args.delete(:absolute)
+        [args[0], args[1]]
+      else
+        [mkpath(args[0]), args[1]]
+      end
+
       cmd = "test ! -d #{path} && mkdir -p #{path}"
       cmd << " && chmod #{chmod} #{path}" if chmod
       sh cmd, :nolog
     end
 
-    def file(name, *args)
-      body, vars = if args.size == 1
-        [args.first, []]
+    def file(*args)
+      path = if args.delete(:absolute)
+        p = args.shift
+        mkdir :absolute, File.dirname(p)
+        p
       else
-        [args.last, args.first]
+        p = args.shift
+        mkdir File.dirname(p)
+        mkpath(p)
       end
 
-      path = mkpath(name)
+      body, vars = if args.size == 1
+        [args[0], []]
+      else
+        [args.last, args[0]]
+      end
+
       content = Hussar.strip_margin(body)
       vars_sh = vars.join(" ")
       sh "printf '\n#{content}\n' #{vars_sh} > #{path}", :nolog
@@ -140,6 +155,10 @@ module Hussar
       else
         "SERVICE_PREFIX/#{f}"
       end
+    end
+
+    def task(name)
+      instance_exec(&Tasks[name])
     end
 
     def env(var, content)

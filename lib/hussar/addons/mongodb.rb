@@ -1,4 +1,6 @@
 addon "Mongodb" do
+  option :mongoid, true
+
   generate do
     service do
       software_name "Mongodb"
@@ -25,6 +27,29 @@ addon "Mongodb" do
       validate do
         check_dir "database"
         check_file "service.conf"
+      end
+    end
+
+    if opts.mongoid?
+      hooks do
+        before :build do
+          info "--> Generating Mongoid configuration (mongoid.yml)"
+
+          file :absolute, "$BUILD_DIR/config/mongoid.yml", ["$RAILS_ENV", "MONGODB_URL"], <<-EOS
+            %s:
+              sessions:
+                default:
+                  database: main
+                  hosts:
+                    - %s
+                  options:
+                    safe: true
+          EOS
+        end
+
+        after :build do
+          rake "mongoid:create_indexes"
+        end
       end
     end
   end

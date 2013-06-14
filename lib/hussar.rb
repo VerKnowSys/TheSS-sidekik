@@ -14,11 +14,13 @@ require "hussar/cron"
 require "hussar/dependencies"
 require "hussar/ports"
 require "hussar/app"
+require "hussar/template"
+require "hussar/tasks"
+require "hussar/hooks"
 
-# Load addons
 include Hussar::DSL
 
-require "hussar/addons/base"
+# Load addons
 require "hussar/addons/mysql"
 require "hussar/addons/redis"
 require "hussar/addons/elasticsearch"
@@ -27,3 +29,7 @@ require "hussar/addons/memcached"
 require "hussar/addons/mongodb"
 require "hussar/addons/postgresql"
 require "hussar/addons/nginx"
+
+# Load templates
+require "hussar/templates/rack"
+require "hussar/templates/rails3"
