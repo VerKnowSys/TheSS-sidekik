@@ -59,26 +59,29 @@ module Hussar
     end
 
     def default_fields
+      h = {}
+
       if @include_default_fields
-        {
-          :install => default_install
-        }
-      else
-        {}
+        if di = default_install
+          h[:install] = di
+        end
       end
+
+      h
     end
 
     def default_install
-      soft = @fields[:software_name].downcase
-      Shell.new do
-        sh "sofin get #{soft}", :nolog
-        expect "All done"
+      if @fields[:software_name]
+        soft = @fields[:software_name].downcase
+        Shell.new do
+          sh "sofin get #{soft}", :nolog
+          expect "All done"
+        end
       end
     end
 
     def generate!(*args)
       super
-
       default_fields.merge(@fields).inject({}) do |hash, (field, gen_or_value)|
         value = if gen_or_value.respond_to?(:generate!)
           gen_or_value.generate!(@options)

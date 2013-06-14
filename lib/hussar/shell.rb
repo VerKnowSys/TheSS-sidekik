@@ -23,10 +23,18 @@ module Hussar
     end
 
     def sh(cmd, *args)
+      @commands << sh_make(cmd, *args)
+    end
+
+    def sh_make(cmd, *args)
       cmd = "#{Hussar.strip_margin(cmd)}".chomp
-      cmd << " 2>&1 >> #{mkpath("service.log")}" unless args.include?(:nolog)
+      cmd << log unless args.include?(:nolog)
       cmd << " &" if args.include?(:background)
-      @commands << cmd
+      cmd
+    end
+
+    def sh_unshift(cmd, *args)
+      @commands.unshift(sh_make(cmd, *args))
     end
 
     def rake(*tasks)
@@ -90,6 +98,10 @@ module Hussar
       sh "printf '#{msg}\n'"
     end
 
+    def log
+      " 2>&1 >> #{mkpath("service.log")}"
+    end
+
     def read_var(file, service = nil)
       name = "HSR_VAR_#{@var_count}"
       path = mkpath(file, service)
@@ -134,13 +146,24 @@ module Hussar
       @env_vars[var] = content
     end
 
+    def env_load
+      info "Loading env"
+      sh %Q{
+        ls SERVICE_PREFIX/../ #{log}
+        for i in `ls SERVICE_PREFIX/../`; do
+          printf 'loading %s\n' "SERVICE_PREFIX/../${i}/service.env" #{log}
+          test -f "SERVICE_PREFIX/../${i}/service.env" && source "SERVICE_PREFIX/../${i}/service.env"
+        done
+      }, :nolog
+    end
+
     def _env_vars_commands
       unless @env_vars.empty?
         path = mkpath("service.env")
-        tpl = @env_vars.keys.map {|k| "#{k}=%s"}.join("\n")
+        tpl = @env_vars.keys.map {|k| "export #{k}=%s"}.join("\n")
         args = @env_vars.values.map {|v| "'#{v}'"}.join(" ")
 
-        sh "printf '#{tpl}' #{args} > #{path}", :nolog
+        sh_unshift "printf '#{tpl}\n' #{args} > #{path}", :nolog
       end
     end
   end

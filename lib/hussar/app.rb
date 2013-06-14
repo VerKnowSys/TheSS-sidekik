@@ -6,6 +6,7 @@ module Hussar
       @name   = config[:name]
       @addons = config[:addons] || []
       @env    = config[:env]
+      @scm    = config[:scm]
 
       @options = Options.new
     end
@@ -33,16 +34,11 @@ module Hussar
     end
 
     def generate_app_service
-      _env = @env # hash for ruby scopes
-      configure = Shell.new do
-        _env.each do |k,v|
-          env k, v
-        end
-      end
-
-      {
-        :configure => configure.generate!(@options)
-      }
+      Addon["Base"].generate!(
+        "env"         => @env,
+        "git_url"     => @scm[:url],
+        "git_branch"  => @scm[:branch]
+      )[:services]["Base"]
     end
 
     def genenerate_addons(options = {})

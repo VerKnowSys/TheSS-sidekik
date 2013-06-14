@@ -1,7 +1,11 @@
 {
   "name": "TestApp",
+  "scm":{
+    "url": "git@github.com:teamon/sinatratest1.git",
+    "branch": "master"
+  },
   "env": {
-    "RAILS_ENV": "production",
+    "RACK_ENV": "production",
     "SENTRY_API_KEY": "imsorandomyoucantguessmenever"
   },
   "addons": [
