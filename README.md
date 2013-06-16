@@ -1,5 +1,8 @@
 # Hussar
 
+
+## Command line interface
+
 ### Installation
   ```
   $ bundle install
@@ -14,9 +17,25 @@
 
   ```
   gen FILE        # Generate igniters for app
+    --debug           # Generate igniter with more verbose error output
+    --output-dir=dir  # Save files to other dir (default: current dir)
+    --prefix=prefix   # Add prefix to every igniter
   help [COMMAND]  # Display help
   list            # List available addons
   ```
+
+## Architecture
+
+Every app is defined as json file that specifies name, template, env variables and list of addons. For such configuration hussar generates TheSS igniters for deploying and runnng application with all dependencies.
+
+### Template
+
+App templates contain predefined structure and commands for running applications. Currently there are templates only for `Rack` and `Rails3` applications that uses git for version control but there are no limitations to add any other app type.
+
+### Addon
+
+Usually addon is a dependency service like Redis or Mysql that the main app needs. Besides generating TheSS igniter addon also specifies hooks for generating app-level configuration and performing tasks during deploy.
+
 
 ## App config syntax
 
@@ -24,6 +43,13 @@
 // examples/TestApp.json
 {
   "name": "TestApp",
+  "template": "Rack",
+  "git_url": "git@github.com:user/repo.git",
+  "git_branch": "master",
+  "env": {
+    "RACK_ENV": "production",
+    "SOME_API_KEY": "imsorandomyoucantguessmenever"
+  },
   "addons": [
     {
       "type": "Mysql",
@@ -39,7 +65,7 @@
 Then run
 
 ```
-$ bin/hsr examples/TestApp.json
+$ bin/hsr gen examples/TestApp.json
 ```
 
 
@@ -98,86 +124,129 @@ addon "Mongodb" do
 end
 ```
 
+### Hooks
+```ruby
+generate do
+  hooks do
+    before :build do
+      info "Generating Addon configuration for App"
+      file "$BUILD_DIR/database.yml" do
+         # ...
+      end
+    end
+
+    after :build do
+      rake "migrate"
+    end
+  end
+end
+```
+
 ### Shell block commands
 
-All file paths will be relative to `SERVICE_PREFIX`
 
-- `sh(cmd, *args)` - Execute command with output redirected to `service.log`
-  - Available `args`
-     - `:nolog` - disable output redirection
-     - `:background` - add `&` at the end of command
-- `rake(*tasks)` - Run rake task `rake "task1", "task2"`
-- `mkdir(dir, chmod = nil)` - Create new directory + optional chmod
-- `file(name, body)` - Create a file if not exists
-- `touch(file)` - Touch a file
-- `backup(file)` - Copy file to `FILE-CURRENT_TIME.backup`
-- `expect(out)` - Define excepted output for validation
-- `info(msg)` - Just a print
-- `daemonize(cmd)` - Put `cmd` in background using double bg (&) trick - it will save process pid file to `SERVICE_PREFIX/service.pid`
+#### Service properties
+
+- `current_user` - name of current user (`$USER`)
+- `service_name` - name of current service
+- `service_port(*args)` - port number for service
+- `service_domain(*args)` - domain name for service
+- `read_var(*args)` - read content of service file
+
+  Possible calls of above methods:
+  - `service_port` - This service default port
+  - `service_port(5)` - This service port no 5
+  - `service_port("Redis")` - Default port for service "Redis"
+  - `service_port("Redis", 7)` - Port no 7 for service "Redis"
+  - `service_domain` - This service domain
+  - `service_domain("Mysql")` - "Mysql" service domain
+  - `read_var(".foo")` - read `.foo` file for this service
+  - `read_var(".foo", "Redis")` - read `.foo` file for service "Redis"
 
 
-### VAR abstraction
+- `service_path(path)` - Returns absolute file path for path relative to `SERVICE_PREFIX`
 
-In case of dynamicly generated config files where you need to read .ports file there is a helper for that:
 
-```ruby
-  validate do
-    vars = []
-    vars << service_port              # own port
-    vars << service_port("Redis")     # other service port
-    vars << service_domain("Nginx")   # other service domain
-    vars << read_var(".foo")          # read SERVICE_PREFIX/.foo file
-    vars << read_var(".bar", "Mysql") # read SERVICE_PREFIX../Mysql/.bar file
-    vars << "USER"                    # any other ENV variable
+#### File operations
 
-    file "service.conf", vars, <<-EOS
-      [some]
-      config.port = %s
-      config.redis.port = %s
-      config.nginx.domain = %s
-      config.foo = %s
-      config.bar = %s
-      config.user = %s
-    EOS
-  end
-```
+In this section each method with `service` in name takes a relative path to `SERVICE_REFIX` directory.
 
-This will create the following igniter:
+- `mkdir(path, mod = nil)`, `service_mkdir(path, mod = nil)` - Create new directory
 
-```json
-  "validate": {
-    "commands": "
-HSR_VAR_0=`cat SERVICE_PREFIX/../Redis/.ports/0`
-test \\"$HSR_VAR_0\\" = \\"\\" && echo 'File .ports/0 of service Redis is empty, exiting.' && exit 1 2>&1 >> SERVICE_PREFIX/service.log
-HSR_VAR_1=`cat SERVICE_PREFIX/../Nginx/.domain`
-test \\"$HSR_VAR_1\\" = \\"\\" && echo 'File .domain of service Redis is empty, exiting.' && exit 1 2>&1 >> SERVICE_PREFIX/service.log
-HSR_VAR_2=`cat SERVICE_PREFIX/.foo`
-test \\"$HSR_VAR_2\\" = \\"\\" && echo 'File .foo of service is empty, exiting.' && exit 1 2>&1 >> SERVICE_PREFIX/service.log
-HSR_VAR_3=`cat SERVICE_PREFIX/../Mysql/.bar`
-test \\"$HSR_VAR_3\\" = \\"\\" && echo 'File .bar of service Mysql is empty, exiting.' && exit 1 2>&1 >> SERVICE_PREFIX/service.log
+- `file(path, *args, &block)`, `service_file(path, *args, &block)` - Create new file. Content provided as result of block will be used as `printf` template
+  Example:
+    ```ruby
+    service_file "service.conf", service_domain, service_port do
+      <<-EOS
+      this.app.url=http://%s:%s
+      EOS
+    end
+    ```
 
-test ! -f SERVICE_PREFIX/service.conf && printf '
-[some]
-config.port = %s
-config.redis.port = %s
-config.nginx.domain = %s
-config.foo = %s
-config.bar = %s
-config.user = %s' SERVICE_PORT $HSR_VAR_0 $HSR_VAR_1 $HSR_VAR_2 $HSR_VAR_3 $USER > SERVICE_PREFIX/service.conf
-"
-  }
-```
+- `chmod(mod, path)`, `service_chmod(mod, path)` - Well, chmod!
+- `touch(path)`, `service_touch(path)` - I think you already know
+- `check_file(path)`, `check_service_file(path)` - Check if file exists and is a regular file
+- `check_dir(path)`, `check_service_dir(path)` - Check if directory exists and is a directory
+- `backup_file(path)`, `backup_service_file(path)` - Copy file as `FILE-CURRENT_TIME.backup
+- `chdir(dir, &block)` - Change current directory
+  Example:
+    ```ruby
+    chdir "some/path" do
+      sh "some command"
+    end
+    ```
+- `copy_from_software_root(path)` - Copy something from software directory `~/Apps/SOFTWARE_NAME`
 
-Possible calls:
 
-- `service_port` - This service default port
-- `service_port(5)` - This service port no 5
-- `service_port("Redis")` - Default port for service "Redis"
-- `service_port("Redis", 7)` - Port no 7 for service "Redis"
-- `service_domain` - This service domain
-- `service_domain("Mysql")` - "Mysql" service domain
-- `read_var(".foo")` - read `.foo` file for this service
-- `read_var(".foo", "Redis")` - read `.foo` file for service "Redis"
+#### Shell commands
+
+- `sh(cmd, *args)` - Log level command for executing shell stuff
+  Possible options:
+    - `:background` - run this command in background
+    - `:novalidate` - skip validation of exit code
+
+  Example:
+    ```ruby
+    sh "some-blocking-command", :background
+    sh "i-will-fail-but-we-dont-care", :novalidate
+    ```
+- `daemonize(cmd)` - Execute command and make it a daemon saving pid to `service.pid` file
+- `set(name, value)` - Set local variable to some expression.
+  Example:
+    ```ruby
+    set "STAMP", "$(date +'%Y-%m-%d-%Hh%Mm%S')-$[${RANDOM}%10000]"
+    # This is the same as
+    sh "STAMP=$(date +'%Y-%m-%d-%Hh%Mm%S')-$[${RANDOM}%10000]", :novalidate
+    ```
+
+#### Logging
+
+Command below use `printf` syntax.
+
+- `info(msg, *args)` - Print info message
+- `debug(msg, *args)` - Print debug message
+- `notice(msg, *args)` - Create notice notification
+- `error(msg, *args)` - Create error notification
+
+Example:
+  ```ruby
+  info "Some msg %s", "$SOME_VAR"
+  ```
+
+#### Other
+
+- `expect(out, timeout = nil)` - Set shell block output expectation
+- `set_env(var, content)` - Export ENV variable, it will be stored in `service.env` file
+  Example:
+    ```ruby
+    set_env "ELASTICSEARCH_URL", "http://SERVCE_ADDRESS:#{service_port}"
+    ```
+
+- `env_load` - Read all `~/SoftwareData/*/service.env` files
+
+- `rake(*tasks)` - Execute rake task
+- `task(name)` - Execute predefined task (see `tasks.rb` for list of tasks)
+
 
 
 ### Dependencies
@@ -230,3 +299,4 @@ Multiple `cron` blocks allowed
 ```
 $ rake test
 ```
+
