@@ -3,6 +3,10 @@ addon "Memcached" do
     service do
       software_name "Memcached"
 
+      configure do
+        set_env "MEMCACHED_URL", "SERVICE_ADDRESS:#{service_port}"
+      end
+
       start do
         info "Launching Memcached"
         sh %Q{

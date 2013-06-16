@@ -24,15 +24,18 @@ addon "Postgresql" do
         }
 
 
-        file "database/pg_hba.conf", <<-EOS
+        service_file "database/pg_hba.conf" do
+          <<-EOS
           # Default Postgresql service configuration
           local all all trust
           host all all 127.0.0.1/32 password
           # host all all 0.0.0.0/0 ident
           host all all 0.0.0.0/0 password
-        EOS
+          EOS
+        end
 
-        file "database/postgresql.conf", [service_port], <<-EOS
+        service_file "database/postgresql.conf", service_port do
+          <<-EOS
           port = %s
           max_connections = 200
           checkpoint_segments = 24
@@ -43,15 +46,16 @@ addon "Postgresql" do
           max_stack_depth = 7MB
           logging_collector = true
           listen_addresses='SERVICE_DOMAIN'
-        EOS
+          EOS
+        end
 
-        chmod "0700", "database"
+        service_chmod "0700", "database"
       end
 
       validate do
-        check_dir "database/base"
-        check_file "database/pg_hba.conf"
-        check_file "database/postgresql.conf"
+        check_service_dir "database/base"
+        check_service_file "database/pg_hba.conf"
+        check_service_file "database/postgresql.conf"
       end
 
       stop do
@@ -63,7 +67,7 @@ addon "Postgresql" do
       end
 
       baby_sitter do
-        sh "SERVICE_ROOT/exports/pg_ctl -D SERVICE_PREFIX/database status", :nolog
+        sh "SERVICE_ROOT/exports/pg_ctl -D SERVICE_PREFIX/database status"
         expect "server is running", 60
       end
     end

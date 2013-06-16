@@ -17,9 +17,10 @@ addon "Mysql" do
       end
 
       configure do
-        mkdir "tmp", 700
-        mkdir "database", 700
-        file "service.conf", [service_port], <<-EOS
+        service_mkdir "tmp", 700
+        service_mkdir "database", 700
+        service_file "service.conf", service_port do
+          <<-EOS
           [mysqld_safe]
           socket = SERVICE_PREFIX/service.sock
           nice = 0
@@ -60,18 +61,19 @@ addon "Mysql" do
 
           [isamchk]
           key_buffer = 16M
-        EOS
+          EOS
+        end
       end
 
       validate do
-        check_dir "tmp"
-        check_dir "database"
-        check_file "service.conf"
+        check_service_dir "tmp"
+        check_service_dir "database"
+        check_service_file "service.conf"
       end
 
       scheduler_actions do
         cron "0 */3 * * * ?" do
-          sh "echo 'Mysql what? Misa nie rozumić mysql crap.'", :nolog
+          sh "echo 'Mysql what? Misa nie rozumić mysql crap.'"
         end
       end
 

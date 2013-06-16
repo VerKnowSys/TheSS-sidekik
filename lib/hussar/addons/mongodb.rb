@@ -11,8 +11,9 @@ addon "Mongodb" do
       end
 
       configure do
-        mkdir "database", 700
-        file "service.conf", [service_port], <<-EOS
+        service_mkdir "database", 700
+        service_file "service.conf", service_port do
+          <<-EOS
           bind_ip = SERVICE_ADDRESS
           port = %s
           dbpath = SERVICE_PREFIX/database
@@ -21,14 +22,15 @@ addon "Mongodb" do
           pidfilepath = SERVICE_PREFIX/service.pid
           unixSocketPrefix = SERVICE_PREFIX
           fork = true
-        EOS
+          EOS
+        end
 
-        env "MONGODB_URL", "SERVICE_ADDRESS:#{service_port}"
+        set_env "MONGODB_URL", "SERVICE_ADDRESS:#{service_port}"
       end
 
       validate do
-        check_dir "database"
-        check_file "service.conf"
+        check_service_dir "database"
+        check_service_file "service.conf"
       end
     end
 
@@ -37,7 +39,8 @@ addon "Mongodb" do
         before :build do
           info "Generating Mongoid configuration (mongoid.yml)"
 
-          file :absolute, "$BUILD_DIR/config/mongoid.yml", ["$RAILS_ENV", "MONGODB_URL"], <<-EOS
+          file "$BUILD_DIR/config/mongoid.yml", "$RAILS_ENV", "$MONGODB_URL" do
+            <<-EOS
             %s:
               sessions:
                 default:
@@ -46,7 +49,8 @@ addon "Mongodb" do
                     - "%s"
                   options:
                     safe: true
-          EOS
+            EOS
+          end
         end
 
         after :build do

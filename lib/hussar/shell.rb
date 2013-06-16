@@ -3,181 +3,41 @@ require "digest/sha1"
 module Hussar
   class Shell < Inner
 
-    def initialize(&block)
-      super
-      @commands = []
+    def initialize(phase, &block)
+      super(&block)
+      @phase = phase
+      @sh_commands = []
       @expect_output = nil
       @expect_timeout = nil
-      @cron = nil
-      @var_count = 0
-      @vars = []
+      @vars_count = 0
+      @vars_commands = []
       @env_vars = {}
     end
 
     def generate!(*args)
       super
-      _env_vars_commands
-      @vars.each do |v|
-        sh_unshift v, :nolog
-      end
-      h = {}
 
       unless @expect_output
-        msg = "All done - #{Digest::SHA1.hexdigest(Time.now.to_s + rand.to_s)}"
+        msg = "#{@phase} - done - #{Digest::SHA1.hexdigest(Time.now.to_s + rand.to_s)}"
         @expect_output = msg
-        sh "echo '#{msg}'", :nolog
+        @sh_commands << "echo '#{msg}'"
       end
 
-      h[:commands] = ([""] + @commands + [""]).join("\n")
-      h[:expectOutput] = @expect_output
-      h[:expectOutputTimeout] = @expect_timeout if @expect_timeout
-      h[:cronEntry] = @cron if @cron
-      h
+      commands = []
+      commands += @vars_commands
+      commands += env_setup_commands
+      commands += @sh_commands
+      commands = [""] + commands + [""] if commands.size > 1
+
+      {
+        :commands       => commands.join("\n"),
+        :expectOutput   => @expect_output,
+        :expectTimeout  => @expect_timeout
+      }.reject {|k,v| !v }
     end
 
-    def chdir(dir, &block)
-      debug "Entering %s", dir
-      sh "pushd $BUILD_DIR", :nolog
-      block.call
-      debug "Leaving %s", dir
-      sh "popd", :nolog
-    end
 
-    def sh(cmd, *args)
-      @commands << sh_make(cmd, *args)
-    end
-
-    def sh_make(cmd, *args)
-      cmd = "#{Hussar.strip_margin(cmd)}".chomp
-
-      command = ""
-      command << cmd
-      command << log unless args.include?(:nolog)
-      command << " &" if args.include?(:background)
-      if args.include?(:validate)
-        err =  %Q|\nif [ ! "$?" = "0" ]; then\n|
-        err << print(31, "!! Command failed !!") + " #{log}\n"
-        err << print(31, cmd.gsub("'", "\\'")) + " #{log}\n"
-        err << %Q|echo 'Build Failed'\n|
-        err << %Q|exit 1\n|
-        err << %Q|fi\n|
-        command << err
-      end
-
-      command
-    end
-
-    def sh_unshift(cmd, *args)
-      @commands.unshift(sh_make(cmd, *args))
-    end
-
-    def rake(*tasks)
-      info "Running rake #{tasks.join(' ')}"
-      sh "test -f bin/rake", :validate
-      sh "bin/rake #{tasks.join(' ')}", :validate
-    end
-
-    def mkdir(*args)
-      path, chmod = if args.delete(:absolute)
-        [args[0], args[1]]
-      else
-        [mkpath(args[0]), args[1]]
-      end
-
-      cmd = "test ! -d #{path} && mkdir -p #{path}"
-      cmd << " && chmod #{chmod} #{path}" if chmod
-      sh cmd, :nolog
-    end
-
-    def chmod(mod, file)
-      sh "chmod -R #{mod} #{mkpath(file)}", :nolog
-    end
-
-    def file(*args)
-      path = if args.delete(:absolute)
-        p = args.shift
-        mkdir :absolute, File.dirname(p)
-        p
-      else
-        p = args.shift
-        mkdir File.dirname(p)
-        mkpath(p)
-      end
-
-      body, vars = if args.size == 1
-        [args[0], []]
-      else
-        [args.last, args[0]]
-      end
-
-      content = Hussar.strip_margin(body)
-      vars_sh = vars.join(" ")
-      sh "printf '\n#{content}\n' #{vars_sh} > #{path}", :nolog
-    end
-
-    def check_file(name)
-      path = mkpath(name)
-      sh "test ! -f #{path} && touch SERVICE_PREFIX/.configure", :nolog
-    end
-
-    def check_dir(name)
-      path = mkpath(name)
-      sh "test ! -d #{path} && touch SERVICE_PREFIX/.configure", :nolog
-    end
-
-    def touch(file)
-      sh "touch #{mkpath(file)}", :nolog
-    end
-
-    def backup(file)
-      path = mkpath(file)
-      sh "test -e #{path} && cp #{path} #{path}-$(date +'%Y-%m-%d--%H%M').backup", :nolog
-    end
-
-    def cp_r_from_root(file)
-      path = mkpath(file)
-      sh "test ! -d #{path} && cp -r SERVICE_ROOT/#{file} SERVICE_PREFIX", :nolog
-    end
-
-    def daemonize(cmd)
-      sh "(#{cmd} >> SERVICE_PREFIX/service.log 2>&1 < /dev/null & echo $! > SERVICE_PREFIX/service.pid) &", :nolog
-    end
-
-    def expect(out, timeout = nil)
-      @expect_output = out
-      @expect_timeout = timeout
-    end
-
-    def info(msg, *args)
-      @commands << sh_make(print(32, msg, *args))
-    end
-
-    def debug(msg, *args)
-      @commands << sh_make(print(34, msg, *args))
-    end
-
-    def print(color, msg, *args)
-      time = "$(date +'%Y-%m-%d-%Hh%Mm%S')"
-      "printf '\e[#{color}m%s - #{msg}\e[0m\n' #{time} #{args.join(" ")}"
-    end
-
-    def log
-      " 2>&1 >> #{mkpath("service.log")}"
-    end
-
-    def read_var(file, service = nil)
-      name = "HSR_VAR_#{@var_count}"
-      path = mkpath(file, service)
-      @vars << "#{name}=`cat #{path}`"
-      test_var(name, file, service)
-      @var_count += 1
-      "$#{name}"
-    end
-
-    def test_var(name, file, service = nil)
-      # msg = "File #{file} of service #{service} is empty, exiting."
-      sh %Q{test ! "$#{name}" = ""}, :validate
-    end
+    # Service properties
 
     def current_user
       "$USER"
@@ -197,7 +57,7 @@ module Hussar
       service ? read_var(".domain", service) : "SERVICE_DOMAIN"
     end
 
-    def mkpath(f, service = nil)
+    def make_path(f, service = nil)
       if service
         "SERVICE_PREFIX/../#{service_prefix}#{service}/#{f}"
       else
@@ -205,23 +65,147 @@ module Hussar
       end
     end
 
-    def task(name)
-      instance_exec(&Tasks[name])
+    def service_path(path)
+      File.join("SERVICE_PREFIX", path)
     end
 
-    def notification(msg, level, *args)
-      sh %Q{
-        NOTIFICATION_MSG="#{msg}"
-        NOTIFICATION_MSG_SHA=$(echo $NOTIFICATION_MSG | shasum | awk '{print $1}')
-        printf '#{msg}' #{args.join(" ")} > SERVICE_PREFIX/.notifications/$NOTIFICATION_MSG_SHA.#{level}
-      }, :nolog
+    def read_var(file, service = nil)
+      name = "HSR_VAR_#{@vars_count}"
+      path = make_path(file, service)
+      @vars_commands << make_sh(%Q|#{name}=`cat #{path}`|, :novalidate)
+      @vars_commands << make_sh(%Q|test ! "$#{name}" = ""|)
+      @vars_count += 1
+      "$#{name}"
+    end
 
-      # HipChat notification
-      # sh %Q{
-      #   if [ ! "$HIPCHAT_ROOM" = "" -a ! "$HIPCHAT_TOKEN" = "" ]; then
-      #     curl "https://api.hipchat.com/v1/rooms/message" -d room_id=$HIPCHAT_ROOM&auth_token=$HIPCHAT_TOKEN&message=$NOTIFICATION_MSG
-      #   fi;
-      # }, :nolog
+
+    # File & directory operations
+
+    def chdir(dir, &block)
+      debug "Entering %s", dir
+      sh "pushd #{dir}"
+      block.call
+      debug "Leaving %s", dir
+      sh "popd"
+    end
+
+    def service_mkdir(path, mod = nil)
+      mkdir(service_path(path), mod)
+    end
+
+    def mkdir(path, mod = nil)
+      sh "mkdir -p #{path}"
+      chmod(mod, path) if mod
+    end
+
+    def service_chmod(mod, path)
+      chmod(mod, service_path(path))
+    end
+
+    def chmod(mod, path)
+      sh "chmod #{mod} #{path}"
+    end
+
+    def service_file(path, *args, &block)
+      file(service_path(path), *args, &block)
+    end
+
+    def file(path, *args, &block)
+      content = Hussar.strip_margin(block.call)
+      @sh_commands << make_printf(content, args, :output => path)
+    end
+
+
+    # File & directory test operations
+
+    def check_service_file(path)
+      check_file(service_path(path))
+    end
+
+    def check_file(path)
+      sh "test -f #{path}"
+    end
+
+    def check_service_dir(path)
+      check_dir(service_path(path))
+    end
+
+    def check_dir(path)
+      sh "test -d #{path}"
+    end
+
+    def service_touch(path)
+      touch(service_path(path))
+    end
+
+    def touch(path)
+      sh "touch #{path}"
+    end
+
+    def backup_service_file(path)
+      backup_file(service_path(path))
+    end
+
+    def backup_file(path)
+      sh "test -e #{path} && cp #{path} #{path}-$(date +'%Y-%m-%d--%H%M').backup"
+    end
+
+    def copy_from_software_root(path)
+      sh "test ! -d #{path} && cp -r SERVICE_ROOT/#{path} SERVICE_PREFIX"
+    end
+
+
+    # Shell commands execution
+
+    def sh(cmd, *args)
+      @sh_commands << make_sh(cmd, *args)
+    end
+
+    def daemonize(cmd)
+      sh "(#{cmd} >> SERVICE_PREFIX/service.log 2>&1 < /dev/null & echo $! > SERVICE_PREFIX/service.pid) &", :novalidate
+    end
+
+    def make_sh(cmd, *args)
+      cmd = Hussar.strip_margin(cmd).chomp
+
+      if args.include?(:background)
+        # Since this will go to background we can't test the exit code
+        cmd + " &"
+      else
+        unless args.include?(:novalidate)
+          if opts.debug?
+            err = []
+            err << ""
+            err << %Q|LAST_EXIT_CODE="$?"|
+            err << %Q|if [ ! "$LAST_EXIT_CODE" = "0" ]; then|
+            err << make_printf("!! Command failed !! exit code: %s", ["$LAST_EXIT_CODE"], :time => true, :color => 31)
+            err << make_printf(cmd.gsub("'", "\\'"))
+            err << %Q|exit 1|
+            err << %Q|fi|
+            err << ""
+            cmd << err.join("\n")
+          else
+            cmd << " || exit 1"
+          end
+        end
+
+        cmd
+      end
+    end
+
+    def set(name, value)
+      sh "#{name}=#{value}", :novalidate
+    end
+
+
+    # Logging
+
+    def info(msg, *args)
+      @sh_commands << make_printf(msg, args, :color => 32, :time => true)
+    end
+
+    def debug(msg, *args)
+      @sh_commands << make_printf(msg, args, :color => 34, :time => true)
     end
 
     def notice(msg, *args)
@@ -232,29 +216,91 @@ module Hussar
       notification(msg, "error", *args)
     end
 
-    def env(var, content)
+    def notification(msg, level, *args)
+      set "NOTIFICATION_MSG", %Q|"#{msg}"|
+      set "NOTIFICATION_MSG_SHA", "$(echo $NOTIFICATION_MSG | shasum | awk '{print $1}')"
+      @sh_commands << make_printf(msg, args, :output => "SERVICE_PREFIX/.notifications/$NOTIFICATION_MSG_SHA.#{level}")
+
+      # HipChat notificationNOTIFICATION_MSG
+      # sh %Q{
+      #   if [ ! "$HIPCHAT_ROOM" = "" -a ! "$HIPCHAT_TOKEN" = "" ]; then
+      #     curl "https://api.hipchat.com/v1/rooms/message" -d room_id=$HIPCHAT_ROOM&auth_token=$HIPCHAT_TOKEN&message=$
+      #   fi;
+      # }, :nolog
+    end
+
+
+    # Expectations
+
+    def expect(out, timeout = nil)
+      @expect_output = out
+      @expect_timeout = timeout
+    end
+
+
+    # ENV operations
+
+    def set_env(var, content)
       @env_vars[var] = content
     end
 
     def env_load
       info "Loading env"
       sh %Q{
-        ls SERVICE_PREFIX/../ #{log}
         for i in `ls SERVICE_PREFIX/../`; do
-          printf 'loading %s\n' "SERVICE_PREFIX/../${i}/service.env" #{log}
+          printf 'loading %s\n' "SERVICE_PREFIX/../${i}/service.env"
           test -f "SERVICE_PREFIX/../${i}/service.env" && source "SERVICE_PREFIX/../${i}/service.env"
         done
-      }, :nolog
+      }, :novalidate
     end
 
-    def _env_vars_commands
-      unless @env_vars.empty?
-        path = mkpath("service.env")
+    def env_setup_commands
+      if @env_vars.empty?
+        []
+      else
+        path = service_path("service.env")
         tpl = @env_vars.keys.map {|k| "export #{k}=%s"}.join("\n")
-        args = @env_vars.values.map {|v| %Q|"#{v}"|}.join(" ")
+        args = @env_vars.values.map {|v| %Q|"#{v}"|}
 
-        sh_unshift "printf '#{tpl}\n' #{args} > #{path}", :nolog
+        [make_printf(tpl, args, :output => path)]
       end
+    end
+
+
+    # Utility methods
+
+    def make_printf(msg, args = [], options = {})
+      if args.is_a?(Hash)
+        options = args
+        args = []
+      end
+
+      if options[:time]
+        msg = "%s - #{msg}"
+        args.unshift "$(date +'%Y-%m-%d-%Hh%Mm%S')"
+      end
+
+      if c = options[:color]
+        msg = "\e[#{c}m#{msg}\e[0m"
+      end
+
+      cmd = %Q|printf '#{msg}\n' #{args.join(' ')}|
+
+      if o = options[:output]
+        cmd << " > #{o}"
+      end
+
+      cmd
+    end
+
+    def rake(*tasks)
+      info "Running rake #{tasks.join(' ')}"
+      sh "test -f bin/rake"
+      sh "bin/rake #{tasks.join(' ')}"
+    end
+
+    def task(name)
+      instance_exec(&Tasks[name])
     end
   end
 end

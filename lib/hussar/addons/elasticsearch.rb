@@ -22,18 +22,18 @@ addon "ElasticSearch" do
       end
 
       configure do
-        cp_r_from_root "config"
-        mkdir "data"
-        mkdir "work"
-        mkdir "logs"
-        env "ELASTICSEARCH_URL", "http://SERVICE_ADDRESS:#{service_port}"
+        copy_from_software_root "config"
+        service_mkdir "data"
+        service_mkdir "work"
+        service_mkdir "logs"
+        set_env "ELASTICSEARCH_URL", "http://SERVICE_ADDRESS:#{service_port}"
       end
 
       validate do
-        check_dir "config"
-        check_dir "data"
-        check_dir "work"
-        check_dir "logs"
+        check_service_dir "config"
+        check_service_dir "data"
+        check_service_dir "work"
+        check_service_dir "logs"
       end
     end
 
@@ -41,9 +41,11 @@ addon "ElasticSearch" do
       hooks do
         before :build do
           info "Generating Tire configuration for Elasticsearch"
-          file :absolute, "$BUILD_DIR/config/initializers/tire_dynamic_es_port.rb", <<-EOS
+          file "$BUILD_DIR/config/initializers/tire_dynamic_es_port.rb" do
+            <<-EOS
             Tire.configure { url ENV["ELASTICSEARCH_URL"] } if ENV["ELASTICSEARCH_URL"]
-          EOS
+            EOS
+          end
         end
       end
     end

@@ -1,8 +1,8 @@
 module Hussar
   class Hooks < Inner
     def initialize(&block)
-      @hooks = IndifferentHash.new
       super(&block)
+      @hooks = IndifferentHash.new
     end
 
     def before(phase, &block)

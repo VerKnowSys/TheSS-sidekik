@@ -2,13 +2,14 @@ module Hussar
   class App
     attr_accessor :name, :addons, :env, :prefix
 
-    def initialize(config)
+    def initialize(config, debug = false)
       @name     = config.delete(:name)
       @template = config.delete(:template)
       @addons   = config.delete(:addons) || []
 
       @options = Options.new(config)
       @options[:service_prefix] = @name
+      @options[:debug] = debug
     end
 
     def generate!
@@ -32,11 +33,9 @@ module Hussar
       services.merge(app_addon[:services])
     end
 
-
-
     def genenerate_addons(options = {})
       @addons.map do |conf|
-        conf[:service_prefix] = options[:service_prefix]
+        conf.merge!(@options)
         type = conf.delete(:type)
         addon = Hussar::Addon[type]
         addon.generate!(conf)

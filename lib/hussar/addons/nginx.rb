@@ -11,7 +11,8 @@ addon "Nginx" do
       end
 
       configure do
-        file "service.conf", [service_port], <<-EOS
+        service_file "service.conf", service_port do
+          <<-EOS
           worker_processes 2;
           events {
               worker_connections 1024;
@@ -32,20 +33,24 @@ addon "Nginx" do
                   }
               }
           }
-        EOS
+          EOS
+        end
       end
 
       validate do
-        sh "#{bin} -t && printf 'Ngins config OK\n'"
+        sh "#{bin} -t"
+        info "Nginx config OK"
       end
 
       reload do
         info "Reloading Nginx"
-        sh "#{bin} -s reload printf 'Nginx reloaded successfully\n'"
+        sh "#{bin} -s reload"
+        info "Nginx reloaded successfully"
       end
 
       stop do
-        sh "#{bin} -s stop && printf 'Nginx started\n'"
+        sh "#{bin} -s stop"
+        info "Nginx started"
       end
 
       scheduler_actions do

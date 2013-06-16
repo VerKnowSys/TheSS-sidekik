@@ -6,7 +6,7 @@ module Hussar
     end
 
     def cron(conf, &block)
-      @actions << Shell.new(&block).generate!(@options).merge(
+      @actions << Shell.new("cron", &block).generate!(@options).merge(
         :cronEntry => conf
       )
     end

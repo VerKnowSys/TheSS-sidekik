@@ -18,9 +18,9 @@ module Hussar
     )
 
     def initialize(include_default_fields = true, &block)
+      super(&block)
       @include_default_fields = include_default_fields
       @fields = {}
-      super(&block)
     end
 
     FIELDS.each do |field, type|
@@ -34,7 +34,7 @@ module Hussar
       when :shell
         class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
-            @fields[:#{field}] = Shell.new(&block)
+            @fields[:#{field}] = Shell.new("#{field}", &block)
           end
         EOS
       when :cron
@@ -73,8 +73,8 @@ module Hussar
     def default_install
       if @fields[:software_name]
         soft = @fields[:software_name].downcase
-        Shell.new do
-          sh "sofin get #{soft}", :nolog
+        Shell.new("install") do
+          sh "sofin get #{soft}", :novalidate
           expect "All done"
         end
       end

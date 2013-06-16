@@ -71,7 +71,8 @@ addon "LogStash" do
         end
 
 
-        file "service.conf", vars, <<-EOS
+        service_file "service.conf", *vars do
+          <<-EOS
           input {
             #{input.join("\n")}
           }
@@ -80,11 +81,12 @@ addon "LogStash" do
             #{output.join("\n")}
           }
 
-        EOS
+          EOS
+        end
       end
 
       validate do
-        check_file "service.conf"
+        check_service_file "service.conf"
       end
     end
   end

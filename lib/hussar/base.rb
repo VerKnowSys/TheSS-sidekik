@@ -29,7 +29,7 @@ module Hussar
   def self.make_me_cookie(config_file, options = {})
     config = IndifferentHash.new(JSON.load(File.read(config_file)))
 
-    app = App.new(config)
+    app = App.new(config, options.delete(:debug))
     services = app.generate!
 
     dir = options[:output_dir] || app.name

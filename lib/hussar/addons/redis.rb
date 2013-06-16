@@ -11,8 +11,9 @@ addon "Redis" do
       end
 
       configure do
-        mkdir "database"
-        file "service.conf", [service_port], <<-EOS
+        service_mkdir "database"
+        service_file "service.conf", service_port do
+          <<-EOS
           # Default Redis service configuration
           # bind SERVICE_DOMAIN
           bind SERVICE_ADDRESS
@@ -30,21 +31,22 @@ addon "Redis" do
           activerehashing #{opts.activerehashing? ? 'yes' : 'no'}
           loglevel notice
           logfile SERVICE_PREFIX/service.log
-        EOS
+          EOS
+        end
       end
 
       validate do
-        check_dir "database"
-        check_file "service.conf"
+        check_service_dir "database"
+        check_service_file "service.conf"
       end
 
       scheduler_actions do
         cron "*/5 * * * * ?" do
-          backup "database/database.rdf"
+          backup_service_file "database/database.rdf"
         end
 
         cron "*/2 * * * * ?" do
-          touch "database/database.test"
+          service_touch "database/database.test"
         end
       end
     end

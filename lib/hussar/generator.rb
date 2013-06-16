@@ -1,10 +1,10 @@
 module Hussar
   class Generator < Inner
     def initialize(addon, &block)
+      super(&block)
       @addon = addon
       @services = {}
       @hooks = {}
-      super(&block)
     end
 
     def service(name = nil, &block)
