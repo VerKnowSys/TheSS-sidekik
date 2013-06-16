@@ -21,14 +21,6 @@ describe "Gen" do
     gen["install"]["commands"].strip.must_equal "sofin get testsoft"
   end
 
-  it "should handle :nolog option" do
-    gen["start"]["commands"].tap do |i|
-      i.must_include "test-log 2>&1 >> SERVICE_PREFIX/service.log"
-      i.must_include "test-nolog"
-      i.wont_include "test-nolog 2>&1 >> SERVICE_PREFIX/service.log"
-    end
-  end
-
   it "should handle :background option" do
     gen["start"]["commands"].tap do |i|
       i.must_include "test-bg &"
@@ -43,7 +35,7 @@ describe "Gen" do
 
   it "should handle mkdir" do
     gen["validate"]["commands"].tap do |i|
-      i.must_include "test ! -d SERVICE_PREFIX/test-dir && mkdir -p SERVICE_PREFIX/test-dir"
+      i.must_include "mkdir -p SERVICE_PREFIX/test-dir"
     end
   end
 
@@ -63,7 +55,16 @@ describe "Gen" do
   end
 
   it "should generate exactly the same config when invoked twice" do
-    gen.must_equal gen
+    a,b = gen,gen
+
+    # Except for the last line with expect random checksum
+    asc = a["start"]["commands"].split("\n")[0..-2]
+    bsc = b["start"]["commands"].split("\n")[0..-2]
+    avc = a["validate"]["commands"].split("\n")[0..-2]
+    bvc = b["validate"]["commands"].split("\n")[0..-2]
+
+    asc.must_equal bsc
+    avc.must_equal bvc
   end
 
   it "should handle dependencies with correct prefix" do
@@ -75,7 +76,7 @@ describe "Gen" do
       i.must_equal ["Dep1", "Dep2"]
     end
 
-    gen(:service_prefix => "TestApp")["dependencies"].tap do |i|
+    addon.generate!(:service_prefix => "TestApp")[:services]["TestApp-Test"]["dependencies"].tap do |i|
       i.must_equal ["TestApp-Dep1"]
     end
   end

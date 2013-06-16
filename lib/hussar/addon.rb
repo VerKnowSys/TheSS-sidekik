@@ -13,7 +13,7 @@ module Hussar
     end
 
     def default_options
-      @default_options ||= Options.new
+      @default_options ||= Options.new(:debug => false)
     end
 
     def option(name, default = false)

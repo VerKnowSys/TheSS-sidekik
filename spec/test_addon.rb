@@ -22,15 +22,15 @@ addon "Test" do
 
       start do
         sh "test-log"
-        sh "test-nolog", :nolog
-        sh "test-bg", :background, :nolog
+        sh "test-nolog"
+        sh "test-bg", :background
         sh "test-opt1 #{opts[:opt1]}"
         sh "test-opt2 #{opts[:opt2]}"
       end
 
       validate do
-        touch "test-file"
-        mkdir "test-dir"
+        service_touch "test-file"
+        service_mkdir "test-dir"
       end
     end
   end

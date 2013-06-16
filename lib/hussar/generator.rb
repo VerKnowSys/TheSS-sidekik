@@ -26,12 +26,16 @@ module Hussar
 
       super
 
-      services = Hash[@services.map do |name, srv|
-        ["#{options[:service_prefix]}-#{name}", srv]
-      end]
+      svcs = if options[:service_prefix]
+        Hash[@services.map do |name, srv|
+          ["#{options[:service_prefix]}-#{name}", srv]
+        end]
+      else
+        @services
+      end
 
       {
-        :services => services,
+        :services => svcs,
         :hooks => @hooks
       }
     end
