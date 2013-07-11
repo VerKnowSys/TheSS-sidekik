@@ -1,7 +1,7 @@
 module Hussar
   class Generator < Inner
-    def initialize(addon, &block)
-      super(&block)
+    def initialize(app, addon, &block)
+      super(app, &block)
       @addon = addon
       @services = {}
       @hooks = {}
@@ -13,7 +13,7 @@ module Hussar
       if @services[name]
         raise "Service #{name} for addon #{addon.name} is already defined"
       else
-        @services[name] = Service.new(&block).generate!(@options)
+        @services[name] = Service.new(app, &block).generate!(@options)
       end
     end
 

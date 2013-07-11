@@ -24,8 +24,8 @@ module Hussar
       @block = block
     end
 
-    def generate!(opts = {})
-      gen = Generator.new(self, &@block)
+    def generate!(app, opts = {})
+      gen = Generator.new(app, self, &@block)
       data = gen.generate!(default_options.merge(opts))
       IndifferentHash.new(data)
     end

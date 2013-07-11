@@ -1,7 +1,12 @@
 module Hussar
   class Inner
-    def initialize(&block)
+    def initialize(app, &block)
+      @app = app
       @block = block
+    end
+
+    def app
+      @app
     end
 
     def opts

@@ -1,6 +1,6 @@
 module Hussar
   class Ports < Inner
-    def initialize(&block)
+    def initialize(app, &block)
       super
       @ports = 1
     end

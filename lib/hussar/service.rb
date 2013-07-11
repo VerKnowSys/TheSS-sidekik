@@ -17,8 +17,8 @@ module Hussar
       :ports_pool     => :ports
     )
 
-    def initialize(include_default_fields = true, &block)
-      super(&block)
+    def initialize(app, include_default_fields = true, &block)
+      super(app, &block)
       @include_default_fields = include_default_fields
       @fields = {}
     end
@@ -34,25 +34,25 @@ module Hussar
       when :shell
         class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
-            @fields[:#{field}] = Shell.new("#{field}", &block)
+            @fields[:#{field}] = Shell.new(app, "#{field}", &block)
           end
         EOS
       when :cron
         class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
-            @fields[:#{field}] = Cron.new(&block)
+            @fields[:#{field}] = Cron.new(app, &block)
           end
         EOS
       when :dependencies
         class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
-            @fields[:#{field}] = Dependencies.new(&block)
+            @fields[:#{field}] = Dependencies.new(app, &block)
           end
         EOS
       when :ports
         class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
-            @fields[:#{field}] = Ports.new(&block)
+            @fields[:#{field}] = Ports.new(app, &block)
           end
         EOS
       end
@@ -73,7 +73,7 @@ module Hussar
     def default_install
       if @fields[:software_name]
         soft = @fields[:software_name].downcase
-        Shell.new("install") do
+        Shell.new(app, "install") do
           sh "sofin get #{soft}", :novalidate
           expect "All done"
         end

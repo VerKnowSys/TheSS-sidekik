@@ -1,12 +1,12 @@
 module Hussar
   class Cron < Inner
-    def initialize(&block)
+    def initialize(app, &block)
       super
       @actions = []
     end
 
     def cron(conf, &block)
-      @actions << Shell.new("cron", &block).generate!(@options).merge(
+      @actions << Shell.new(app, "cron", &block).generate!(@options).merge(
         :cronEntry => conf
       )
     end

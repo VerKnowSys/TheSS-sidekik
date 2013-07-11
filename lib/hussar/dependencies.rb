@@ -1,6 +1,6 @@
 module Hussar
   class Dependencies < Inner
-    def initialize(&block)
+    def initialize(app, &block)
       super
       @dependencies = []
     end

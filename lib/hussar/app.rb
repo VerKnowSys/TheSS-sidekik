@@ -1,6 +1,6 @@
 module Hussar
   class App
-    attr_accessor :name, :addons, :env, :prefix
+    attr_accessor :name, :addons, :env, :prefix, :template
 
     def initialize(config, debug = false)
       @name     = config.delete(:name)
@@ -27,18 +27,18 @@ module Hussar
 
       services = addons.inject({}) {|h,a| h.merge(a[:services]) }
 
-      template = Template[@template]
-      app_addon = template.generate!(services.keys, hooks, @options)
+      tpl = Template[@template]
+      app_addon = tpl.generate!(services.keys, hooks, @options)
 
       services.merge(app_addon[:services])
     end
 
     def genenerate_addons(options = {})
       @addons.map do |conf|
-        conf.merge!(@options)
+        conf.merge!(options)
         type = conf.delete(:type)
         addon = Hussar::Addon[type]
-        addon.generate!(conf)
+        addon.generate!(self, conf)
       end
     end
   end

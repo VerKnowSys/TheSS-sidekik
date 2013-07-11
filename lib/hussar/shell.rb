@@ -3,8 +3,8 @@ require "digest/sha1"
 module Hussar
   class Shell < Inner
 
-    def initialize(phase, &block)
-      super(&block)
+    def initialize(app, phase, &block)
+      super(app, &block)
       @phase = phase
       @sh_commands = []
       @expect_output = nil
@@ -55,6 +55,26 @@ module Hussar
 
     def service_domain(service = nil)
       service ? read_var(".domain", service) : "SERVICE_DOMAIN"
+    end
+
+    def app_codename
+      app.name.downcase
+    end
+
+    def app_name
+      app.template
+    end
+
+    def app_port(*args)
+      service_port(app_name, *args)
+    end
+
+    def app_domain
+      service_domain(app_name)
+    end
+
+    def app_public
+      make_path("current/public", app_name)
     end
 
     def make_path(f, service = nil)
