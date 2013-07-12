@@ -37,6 +37,10 @@
     {
       "type": "Nginx",
       "domain": "test-app.rack"
+    },
+    {
+      "type": "Thin",
+      "workers": 3
     }
   ]
 }

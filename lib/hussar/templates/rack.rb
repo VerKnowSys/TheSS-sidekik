@@ -5,15 +5,14 @@ template "Rack" do
     task :bundle
   end
 
-  start do
-    env_load
-    sh %{
-      cd SERVICE_PREFIX/current
+  # start do
+  #   sh %{
+  #     cd SERVICE_PREFIX/current
 
-      bin/rackup \\
-        -p #{service_port} \\
-        -E $RACK_ENV \\
-        -D -P SERVICE_PREFIX/service.pid
-    }, :background
-  end
+  #     bin/rackup \\
+  #       -p #{service_port} \\
+  #       -E $RACK_ENV \\
+  #       -D -P SERVICE_PREFIX/service.pid
+  #   }, :background
+  # end
 end

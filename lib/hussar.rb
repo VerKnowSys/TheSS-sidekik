@@ -17,6 +17,7 @@ require "hussar/app"
 require "hussar/template"
 require "hussar/tasks"
 require "hussar/hooks"
+require "hussar/export"
 
 include Hussar::DSL
 

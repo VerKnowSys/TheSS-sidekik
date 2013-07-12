@@ -1,6 +1,7 @@
 addon "Nginx" do
   option :domain, ""
   option :workers, 2
+  option :locations, []
 
   generate do
     service do
@@ -14,9 +15,38 @@ addon "Nginx" do
       end
 
       configure do
-        upstream = "#{app_codename}-#{Time.now.to_i}"
+        locations_config, upstreams_config = opts.locations.map.with_index do |location, index|
+          upstream_name = "#{app_codename}-#{index}-#{Time.now.to_i}"
 
-        service_file "service.conf", [app_domain, app_port, service_port] do
+          upstream_config = <<-EOS
+              upstream #{upstream_name} {
+#{location[:upstream].map {|where| "      server #{where};" }.join("\n") }
+              }
+          EOS
+
+          location_config = <<-EOS
+                  location #{location[:path]} {
+                      proxy_set_header  X-Real-IP  $remote_addr;
+                      proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+                      proxy_set_header  Host $http_host;
+                      proxy_redirect    off;
+
+                      if (-f $request_filename.html) {
+                        rewrite (.*) $1.html break;
+                      }
+
+                      if (!-f $request_filename) {
+                          proxy_pass http://#{upstream_name};
+                          break;
+                      }
+                  }
+          EOS
+
+          [location_config, upstream_config]
+        end.transpose.map {|e| e.join("\n\n")}
+
+
+        service_file "service.conf", [service_port] do
           <<-EOS
           worker_processes #{opts.workers};
           events {
@@ -31,32 +61,16 @@ addon "Nginx" do
               keepalive_timeout 270;
               error_log SERVICE_PREFIX/service.log;
 
-              upstream #{upstream} {
-                server %s:%s;
-              }
+#{upstreams_config}
 
               server {
-                  listen 0.0.0.0:%s;
+                  listen %s;
                   server_name #{opts.domain} SERVICE_DOMAIN SERVICE_ADDRESS;
 
                   root #{app_public};
                   index index.html index.htm;
 
-                  location / {
-                      proxy_set_header  X-Real-IP  $remote_addr;
-                      proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
-                      proxy_set_header  Host $http_host;
-                      proxy_redirect    off;
-
-                      if (-f $request_filename.html) {
-                        rewrite (.*) $1.html break;
-                      }
-
-                      if (!-f $request_filename) {
-                          proxy_pass http://#{upstream};
-                          break;
-                      }
-                  }
+#{locations_config}
               }
           }
           EOS
@@ -86,8 +100,8 @@ addon "Nginx" do
       end
 
       baby_sitter do
-        sh "#{bin} -t", :novalidate
-        expect "test is successful", 60
+        sh "#{bin} -t" #, :novalidate
+        # expect "test is successful", 60
       end
     end
   end

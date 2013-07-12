@@ -8,6 +8,7 @@ module Hussar
     attr_accessor :name, :generator
     def initialize(name, &block)
       @name = name
+      @exports = {}
 
       instance_exec(&block)
     end
@@ -20,13 +21,44 @@ module Hussar
       default_options[name] = default
     end
 
+    def export_options_for(other_addon_name, &block)
+      @exports[other_addon_name] = Export.new(self, &block)
+    end
+
+    def exported_options(app, conf)
+      @exports.map do |name, export|
+        [name, export.generate!(app, conf)]
+      end
+    end
+
     def generate(&block)
       @block = block
     end
 
-    def generate!(app, opts = {})
+    def generate!(app, opts, exported_opts = [])
       gen = Generator.new(app, self, &@block)
-      data = gen.generate!(default_options.merge(opts))
+
+      o = default_options.merge(opts)
+      # puts
+      # puts @name
+      # puts o.inspect
+      # puts exported_opts.inspect
+
+      (exported_opts || []).each do |hash|
+        hash.each do |opt_name, block|
+          # puts "Applying #{opt_name}"
+          # o[opt_name]
+          # puts "before: #{o[opt_name]}"
+          o[opt_name] = block.call(o[opt_name])
+          # puts "after: #{o[opt_name]}"
+        end
+      end
+
+
+      # puts o.inspect
+      # puts
+
+      data = gen.generate!(o)
       IndifferentHash.new(data)
     end
 

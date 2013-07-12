@@ -16,9 +16,22 @@ module Hussar
       puts "--> Generating new application #{@name}"
 
       @tpl = Template[@template]
-      addons = genenerate_addons(@options)
 
-      hooks = addons.inject(IndifferentHash.new) do |h,a|
+      addons = initialize_addons
+      exported_options = addons.inject({}) do |h, (a, conf)|
+        a.exported_options(self, Options.new(conf)).each do |addon, opts|
+          h[addon] ||= []
+          h[addon] << opts
+        end
+
+        h
+      end
+
+      generated_addons = addons.map do |addon, conf|
+        addon.generate!(self, conf.merge(@options), exported_options[addon.name])
+      end
+
+      hooks = generated_addons.inject(IndifferentHash.new) do |h,a|
         a[:hooks].each do |name, hook|
           h[name] ||= []
           h[name] << hook
@@ -26,7 +39,7 @@ module Hussar
         h
       end
 
-      services = addons.inject({}) {|h,a| h.merge(a[:services]) }
+      services = generated_addons.inject({}) {|h,a| h.merge(a[:services]) }
 
       app_addon = @tpl.generate!(self, services.keys, hooks, @options)
 
@@ -37,12 +50,9 @@ module Hussar
       @tpl.options
     end
 
-    def genenerate_addons(options = {})
+    def initialize_addons
       @addons.map do |conf|
-        conf.merge!(@options)
-        type = conf.delete(:type)
-        addon = Hussar::Addon[type]
-        addon.generate!(self, conf)
+        [Hussar::Addon[conf.delete(:type)], conf]
       end
     end
   end

@@ -34,13 +34,13 @@ module Hussar
       when :shell
         class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
-            @fields[:#{field}] = Shell.new(app, "#{field}", &block)
+            @fields[:#{field}] = Shell.new(app, self, "#{field}", &block)
           end
         EOS
       when :cron
         class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{field}(&block)
-            @fields[:#{field}] = Cron.new(app, &block)
+            @fields[:#{field}] = Cron.new(app, self, &block)
           end
         EOS
       when :dependencies
@@ -73,7 +73,7 @@ module Hussar
     def default_install
       if @fields[:software_name]
         soft = @fields[:software_name].downcase
-        Shell.new(app, "install") do
+        Shell.new(app, self, "install") do
           sh "sofin get #{soft}", :novalidate
           expect "All done"
         end

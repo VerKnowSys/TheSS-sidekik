@@ -1,10 +1,16 @@
 addon "Thin" do
   option :workers, 1
 
-  # export_options "Nginx" do
-  #   upstream = (0...opts.workers).map {|e| [:unix, "#{service_prefix}/service.#{i}.sock"] }
-  #   export_option :upstream, upstream
-  # end
+  export_options_for "Nginx" do
+    export_option :locations do |locations|
+      locations << {
+        :path     => "/",
+        :upstream => (0...opts.workers).map {|i|
+          "unix:#{service_prefix}/thin.#{i}.sock"
+        }
+      }
+    end
+  end
 
   generate do
     service do
@@ -33,21 +39,20 @@ addon "Thin" do
         }
       end
 
-
-      workers = (0...opts.workers)
-
       baby_sitter do
-        pidfiles = workers.map {|i| "SERVICE_PREFIX/thin.#{i}.pid" }
+        pidfiles = (0...opts.workers).map {|i| "SERVICE_PREFIX/thin.#{i}.pid" }
         check_pids pidfiles
         expect_timeout 60
       end
 
       start do
+        env_load
         run bin, "start"
       end
 
       stop do
         run bin, "stop"
+        sh %Q{for i in `find SERVICE_PREFIX -name "thin.*.pid"`; do svddw `cat $i`; done}
       end
     end
   end

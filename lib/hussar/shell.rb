@@ -3,8 +3,9 @@ require "digest/sha1"
 module Hussar
   class Shell < Inner
 
-    def initialize(app, phase, &block)
+    def initialize(app, service, phase, &block)
       super(app, &block)
+      @service = service
       @phase = phase
       @sh_commands = []
       @expect_output = nil
@@ -20,7 +21,8 @@ module Hussar
       unless @expect_output
         msg = "#{@phase} - done - #{Digest::SHA1.hexdigest(Time.now.to_s + rand.to_s)}"
         @expect_output = msg
-        @sh_commands << "echo '#{msg}'"
+        @sh_commands.unshift "echo '' > SERVICE_PREFIX/.expect"
+        @sh_commands << "echo '#{msg}' > SERVICE_PREFIX/.expect"
       end
 
       commands = []
@@ -75,6 +77,10 @@ module Hussar
 
     def app_public
       make_path("current/public", app_name)
+    end
+
+    def self_service_prefix
+      "SERVICE_PREFIX/../#{service_prefix}#{@service.name}"
     end
 
     def make_path(f, service = nil)

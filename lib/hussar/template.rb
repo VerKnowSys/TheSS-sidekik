@@ -44,6 +44,7 @@ module Hussar
         generate do
           service do
             software_name tpl.attrs[:software_name]
+            watch_port false
 
             dependencies do
               deps.each {|d| dependency d, false }
