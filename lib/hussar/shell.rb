@@ -257,6 +257,10 @@ module Hussar
       @expect_timeout = timeout
     end
 
+    def expect_timeout(timeout)
+      @expect_timeout = timeout
+    end
+
 
     # ENV operations
 
@@ -313,10 +317,21 @@ module Hussar
       cmd
     end
 
+    # Wrapper for instance exec
+    def run(block, *args)
+      instance_exec(*args, &block)
+    end
+
     def rake(*tasks)
       info "Running rake #{tasks.join(' ')}"
       sh "test -f bin/rake"
       sh "bin/rake #{tasks.join(' ')}"
+    end
+
+    def check_pids(pidfiles)
+      pidfiles.each do |pidfile|
+        sh "kill -0 `cat #{pidfile}`"
+      end
     end
 
     def task(name)

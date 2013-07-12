@@ -4,6 +4,7 @@ module Hussar
     def initialize(name, &block)
       @attrs = {}
       @attrs[:name] = name
+      @attrs[:options] = {}
 
       instance_exec(&block)
     end
@@ -14,6 +15,10 @@ module Hussar
 
     def software_name(name)
       @attrs[:software_name] = name
+    end
+
+    def option(name, default = nil)
+      @attrs[:options][name] = default
     end
 
     def build(&block)
@@ -31,6 +36,10 @@ module Hussar
         option :env, {}
         option :git_url
         option :git_branch, "master"
+
+        tpl.attrs[:options].each do |name, default|
+          option name, default
+        end
 
         generate do
           service do

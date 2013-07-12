@@ -29,6 +29,7 @@ require "hussar/addons/memcached"
 require "hussar/addons/mongodb"
 require "hussar/addons/postgresql"
 require "hussar/addons/nginx"
+require "hussar/addons/thin"
 
 # Load templates
 require "hussar/templates/rack"

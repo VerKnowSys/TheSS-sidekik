@@ -15,6 +15,7 @@ module Hussar
     def generate!
       puts "--> Generating new application #{@name}"
 
+      @tpl = Template[@template]
       addons = genenerate_addons(@options)
 
       hooks = addons.inject(IndifferentHash.new) do |h,a|
@@ -27,10 +28,13 @@ module Hussar
 
       services = addons.inject({}) {|h,a| h.merge(a[:services]) }
 
-      tpl = Template[@template]
-      app_addon = tpl.generate!(self, services.keys, hooks, @options)
+      app_addon = @tpl.generate!(self, services.keys, hooks, @options)
 
       services.merge(app_addon[:services])
+    end
+
+    def opts
+      @tpl.options
     end
 
     def genenerate_addons(options = {})
