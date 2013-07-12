@@ -24,7 +24,8 @@ module Hussar
       @attrs[:start] = block
     end
 
-    def generate!(deps, hooks, opts = {})
+    def generate!(app, deps, hooks, opts = {})
+      puts "generate1! #{opts.inspect}"
       tpl = self
 
       addon = Addon.new(name) do
@@ -65,7 +66,9 @@ module Hussar
         end
       end
 
-      addon.generate!(opts)
+      puts "generate2! #{opts.inspect}"
+
+      addon.generate!(app, opts)
     end
 
     class << self

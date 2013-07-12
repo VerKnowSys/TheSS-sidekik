@@ -1,7 +1,7 @@
 module Hussar
   class Hooks < Inner
-    def initialize(&block)
-      super(&block)
+    def initialize(app, &block)
+      super
       @hooks = IndifferentHash.new
     end
 

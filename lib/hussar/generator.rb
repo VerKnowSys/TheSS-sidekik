@@ -18,7 +18,7 @@ module Hussar
     end
 
     def hooks(&block)
-      @hooks = Hooks.new(&block).generate!(@options)
+      @hooks = Hooks.new(app, &block).generate!(@options)
     end
 
     def generate!(options)

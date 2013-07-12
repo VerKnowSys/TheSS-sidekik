@@ -28,14 +28,14 @@ module Hussar
       services = addons.inject({}) {|h,a| h.merge(a[:services]) }
 
       tpl = Template[@template]
-      app_addon = tpl.generate!(services.keys, hooks, @options)
+      app_addon = tpl.generate!(self, services.keys, hooks, @options)
 
       services.merge(app_addon[:services])
     end
 
     def genenerate_addons(options = {})
       @addons.map do |conf|
-        conf.merge!(options)
+        conf.merge!(@options)
         type = conf.delete(:type)
         addon = Hussar::Addon[type]
         addon.generate!(self, conf)

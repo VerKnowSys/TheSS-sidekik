@@ -15,9 +15,10 @@
     {
       "type": "Redis"
     },
-    // {
-    //   "type": "ElasticSearch"
-    // },
+    {
+      "type": "ElasticSearch",
+      "tire": false
+    },
     {
       "type": "LogStash",
       "udp": true,
@@ -26,12 +27,13 @@
     {
       "type": "Memcached"
     },
-    // {
-    //   "type": "Mongodb"
-    // }
+    {
+      "type": "Mongodb",
+      "mongoid": false
+    },
     // {
     //   "type": "Postgresql"
-    // }
+    // },
     {
       "type": "Nginx",
       "domain": "test-app.rack"
