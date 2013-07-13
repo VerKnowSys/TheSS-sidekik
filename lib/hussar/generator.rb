@@ -36,7 +36,8 @@ module Hussar
 
       {
         :services => svcs,
-        :hooks => @hooks
+        :hooks => @hooks,
+        :opts => opts
       }
     end
   end

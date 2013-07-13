@@ -60,6 +60,7 @@ addon "Nginx" do
               sendfile on;
               keepalive_timeout 270;
               error_log SERVICE_PREFIX/service.log;
+              access_log SERVICE_PREFIX/access.log;
 
 #{upstreams_config}
 

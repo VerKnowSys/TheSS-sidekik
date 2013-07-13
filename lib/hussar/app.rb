@@ -34,7 +34,10 @@ module Hussar
       hooks = generated_addons.inject(IndifferentHash.new) do |h,a|
         a[:hooks].each do |name, hook|
           h[name] ||= []
-          h[name] << hook
+          h[name] << {
+            :hook => hook,
+            :options => a[:opts]
+          }
         end
         h
       end

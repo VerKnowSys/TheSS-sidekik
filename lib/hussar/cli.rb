@@ -17,10 +17,20 @@ module Hussar
 
     desc "Generate igniters for app"
     option :prefix,       :default => nil
-    option :output_dir,   :default => nil
+    option :output_dir,   :default => "#{ENV["HOME"]}/Igniters/Services"
     flag :debug
     def gen(file)
       Hussar.make_me_cookie(file, options)
+    end
+
+    desc "Generate all example igniters"
+    option :prefix,       :default => nil
+    option :output_dir,   :default => "#{ENV["HOME"]}/Igniters/Services"
+    flag :debug
+    def gen_examples
+      Dir[File.join(File.expand_path("../../../examples", __FILE__), "*.json")].each do |f|
+        Hussar.make_me_cookie(f, options)
+      end
     end
   end
 end

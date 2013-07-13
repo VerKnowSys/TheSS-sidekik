@@ -21,22 +21,19 @@ addon "Thin" do
         no_ports
       end
 
-      install do
-        sh "sofin get ruby", :novalidate
-        sh "test -f SERVICE_ROOT/exports/thin || (gem install thin && sofin export thin ruby)", :novalidate
-      end
-
       bin = lambda do |command|
-        sh %Q{
-          SERVICE_ROOT/exports/thin \\
-            --daemonize \\
-            --rackup #{make_path "current/config.ru", app_name} \\
-            --servers #{opts.workers} \\
-            --socket SERVICE_PREFIX/thin.sock \\
-            --pid SERVICE_PREFIX/thin.pid \\
-            --log SERVICE_PREFIX/thin.log \\
-            #{command}
-        }
+        chdir app_current do
+          sh %Q{
+            #{app_current}/bin/thin \\
+              --daemonize \\
+              --rackup #{make_path "current/config.ru", app_name} \\
+              --servers #{opts.workers} \\
+              --socket SERVICE_PREFIX/thin.sock \\
+              --pid SERVICE_PREFIX/thin.pid \\
+              --log SERVICE_PREFIX/thin.log \\
+              #{command}
+          }
+        end
       end
 
       baby_sitter do
@@ -53,6 +50,16 @@ addon "Thin" do
       stop do
         run bin, "stop"
         sh %Q{for i in `find SERVICE_PREFIX -name "thin.*.pid"`; do svddw `cat $i`; done}
+      end
+
+    end
+
+    hooks do
+      after :build do
+        info "Checking for thin binary"
+        sh %Q{if [ ! -f $BUILD_DIR/bin/thin ]; then }, :novalidate
+          fatal "Missing thin executable. Add gem 'thin' to Gemfile"
+        sh "fi", :novalidate
       end
     end
   end

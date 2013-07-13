@@ -75,6 +75,10 @@ module Hussar
       service_domain(app_name)
     end
 
+    def app_current
+      make_path("current", app_name)
+    end
+
     def app_public
       make_path("current/public", app_name)
     end
@@ -234,6 +238,12 @@ module Hussar
       @sh_commands << make_printf(msg, args, :color => 34, :time => true)
     end
 
+    def fatal(msg, *args)
+      @sh_commands << make_printf(msg, args, :color => 31, :time => true)
+      @sh_commands << "exit 1"
+      @sh_commands << "touch SERVICE_PREFIX/.validationFailure"
+    end
+
     def notice(msg, *args)
       notification(msg, "notice", *args)
     end
@@ -246,13 +256,6 @@ module Hussar
       set "NOTIFICATION_MSG", %Q|"#{msg}"|
       set "NOTIFICATION_MSG_SHA", "$(echo $NOTIFICATION_MSG | shasum | awk '{print $1}')"
       @sh_commands << make_printf(msg, args, :output => "SERVICE_PREFIX/.notifications/$NOTIFICATION_MSG_SHA.#{level}")
-
-      # HipChat notificationNOTIFICATION_MSG
-      # sh %Q{
-      #   if [ ! "$HIPCHAT_ROOM" = "" -a ! "$HIPCHAT_TOKEN" = "" ]; then
-      #     curl "https://api.hipchat.com/v1/rooms/message" -d room_id=$HIPCHAT_ROOM&auth_token=$HIPCHAT_TOKEN&message=$
-      #   fi;
-      # }, :nolog
     end
 
 

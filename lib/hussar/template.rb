@@ -55,17 +55,30 @@ module Hussar
 
               chdir "$BUILD_DIR" do
                 if hs = hooks[:before_build]
-                  hs.each {|h| instance_exec(&h) }
+                  hs.each do |h|
+                    @options.merge!(h[:options] || {})
+                    instance_exec(&h[:hook])
+                  end
                 end
 
                 instance_exec(&tpl.attrs[:build]) if tpl.attrs[:build]
 
                 if hs = hooks[:after_build]
-                  hs.each {|h| instance_exec(&h) }
+                  hs.each do |h|
+                    @options.merge!(h[:options] || {})
+                    instance_exec(&h[:hook])
+                  end
                 end
               end
 
               task :build_finish
+
+              if hs = hooks[:after_build_finish]
+                hs.each do |h|
+                  @options.merge!(h[:options] || {})
+                  instance_exec(&h[:hook])
+                end
+              end
             end
 
             start do
