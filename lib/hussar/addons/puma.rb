@@ -20,7 +20,8 @@ addon "Puma" do
         no_ports
       end
 
-      bin = lambda do
+      start do
+        env_load
         chdir app_current do
           sh %Q{
             #{app_current}/bin/puma \\
@@ -30,11 +31,6 @@ addon "Puma" do
               #{make_path "current/config.ru", app_name} 2>&1 > SERVICE_PREFIX/service.log
           }
         end
-      end
-
-      start do
-        env_load
-        run bin
       end
 
       reload do

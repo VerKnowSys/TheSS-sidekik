@@ -280,9 +280,9 @@ module Hussar
     def env_load
       info "Loading env"
       sh %Q{
-        for i in `ls SERVICE_PREFIX/../`; do
-          printf 'loading %s\n' "SERVICE_PREFIX/../${i}/service.env"
-          test -f "SERVICE_PREFIX/../${i}/service.env" && source "SERVICE_PREFIX/../${i}/service.env"
+        for i in `find SERVICE_PREFIX/../ -d 2 -name "service.env"`; do
+          printf 'loading %s\n' "$i"
+          source "$i"
         done
       }, :novalidate
     end

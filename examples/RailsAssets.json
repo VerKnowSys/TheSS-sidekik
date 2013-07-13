@@ -15,6 +15,11 @@
       "type": "Puma"
     },
     {
+      "type": "Sidekiq",
+      "require": "./lib/rails/assets/sidekiq.rb",
+      "queues": ["reindex"]
+    },
+    {
       "type": "Nginx",
       "domain": "rails-assets.thess"
     },
