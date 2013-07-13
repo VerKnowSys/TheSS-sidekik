@@ -1,0 +1,27 @@
+{
+  "name": "RailsAssets",
+  "template": "Rack",
+  "git_url": "git@github.com:rails-assets/rails-assets.git",
+  "git_branch": "master",
+  "env": {
+    "RACK_ENV": "production",
+    "DATA_DIR": "../shared/data"
+  },
+  "addons": [
+    {
+      "type": "Redis"
+    },
+    {
+      "type": "Puma"
+    },
+    {
+      "type": "Nginx",
+      "domain": "rails-assets.thess"
+    },
+    {
+      "type": "HipChat",
+      "room": "DevOps",
+      "token": "[token]"
+    }
+  ]
+}

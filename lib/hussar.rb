@@ -31,6 +31,7 @@ require "hussar/addons/mongodb"
 require "hussar/addons/postgresql"
 require "hussar/addons/nginx"
 require "hussar/addons/thin"
+require "hussar/addons/puma"
 require "hussar/addons/hipchat"
 
 # Load templates
