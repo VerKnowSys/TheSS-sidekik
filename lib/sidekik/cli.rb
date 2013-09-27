@@ -1,12 +1,12 @@
 require "sickle"
 
-module Hussar
+module Sidekik
   class CLI
     include Sickle::Runner
 
     desc "List available addons"
     def list
-      Hussar::Addon.all.each do |name, addon|
+      Sidekik::Addon.all.each do |name, addon|
         puts "#{name.ljust(10)}"
         addon.default_options.each do |opt, default|
           puts "  - #{opt} (default: #{default})"
@@ -20,7 +20,7 @@ module Hussar
     option :output_dir,   :default => "#{ENV["HOME"]}/Igniters/Services"
     flag :debug
     def gen(file)
-      Hussar.make_me_cookie(file, options)
+      Sidekik.make_me_cookie(file, options)
     end
 
     desc "Generate all example igniters"
@@ -29,7 +29,7 @@ module Hussar
     flag :debug
     def gen_examples
       Dir[File.join(File.expand_path("../../../examples", __FILE__), "*.json")].each do |f|
-        Hussar.make_me_cookie(f, options)
+        Sidekik.make_me_cookie(f, options)
       end
     end
   end

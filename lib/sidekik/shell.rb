@@ -1,6 +1,6 @@
 require "digest/sha1"
 
-module Hussar
+module Sidekik
   class Shell < Inner
 
     def initialize(app, service, phase, &block)
@@ -141,7 +141,7 @@ module Hussar
     end
 
     def file(path, *args, &block)
-      content = Hussar.strip_margin(block.call)
+      content = Sidekik.strip_margin(block.call)
       @sh_commands << make_printf(content, args, :output => path)
     end
 
@@ -196,7 +196,7 @@ module Hussar
     end
 
     def make_sh(cmd, *args)
-      cmd = Hussar.strip_margin(cmd).chomp
+      cmd = Sidekik.strip_margin(cmd).chomp
 
       if args.include?(:background)
         # Since this will go to background we can't test the exit code

@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   Tasks = {}
   Tasks[:build_start] = lambda do
     info ""

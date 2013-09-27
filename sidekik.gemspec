@@ -1,19 +1,20 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'hussar/version'
+require 'sidekik/version'
+
 
 Gem::Specification.new do |spec|
-  spec.name          = "hussar"
-  spec.version       = Hussar::VERSION
-  spec.authors       = ["Tymon Tobolski"]
-  spec.email         = ["tymon.tobolski@monterail.com"]
-  spec.description   = %q{Hussar!}
-  spec.summary       = %q{Hussar!}
+  spec.name          = "sidekik"
+  spec.version       = Sidekik::VERSION
+  spec.authors       = ["Tymon Tobolski", "Daniel Dettlaff"]
+  spec.email         = ["dmilith@verknowsys.com"]
+  spec.description   = %q{Sidekik!}
+  spec.summary       = %q{Sidekik!}
   spec.homepage      = ""
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files`.split($/)
+  spec.files         = `find . -f -name '*.rb'`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]

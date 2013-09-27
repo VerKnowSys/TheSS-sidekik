@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Cron < Inner
     def initialize(app, service, &block)
       super(app, &block)

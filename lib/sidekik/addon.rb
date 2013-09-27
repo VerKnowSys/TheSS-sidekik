@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Options < IndifferentHash
     include Hashie::Extensions::MethodQuery
     include Hashie::Extensions::MethodReader

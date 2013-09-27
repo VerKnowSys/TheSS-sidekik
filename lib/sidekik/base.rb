@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class IndifferentHash < Hash
     include Hashie::Extensions::MergeInitializer
     include Hashie::Extensions::IndifferentAccess
@@ -39,7 +39,7 @@ module Hussar
       file = File.join(dir, "#{name}.json")
       puts "--> Saving #{name} igniter to #{file}"
       File.open(file, "w") {|f|
-        f.puts Hussar.to_json(data)
+        f.puts Sidekik.to_json(data)
       }
     end
   end

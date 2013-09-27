@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Hooks < Inner
     def initialize(app, &block)
       super

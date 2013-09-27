@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Export
     def initialize(addon, &block)
       @addon = addon

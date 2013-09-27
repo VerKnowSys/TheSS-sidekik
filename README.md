@@ -1,4 +1,16 @@
-# Hussar
+
+## Authors:
+* Tymon (teamon) Tobolski
+* Daniel (dmilith) Dettlaff
+
+
+## Contributors:
+* Daniel (dmilith) Dettlaff
+
+
+## Software dependencies
+* [Sofin](http://verknowsys.github.io/sofin)
+* [TheSS](https://github.com/VerKnowSys/TheSS)
 
 
 ## Command line interface
@@ -10,7 +22,7 @@
 
 ### Usage:
   ```
-  bin/hsr COMMAND [ARG1, ARG2, ...] [OPTIONS]
+  bin/skik COMMAND [ARG1, ARG2, ...] [OPTIONS]
   ```
 
 ### Tasks:
@@ -26,7 +38,7 @@
 
 ## Architecture
 
-Every app is defined as json file that specifies name, template, env variables and list of addons. For such configuration hussar generates TheSS igniters for deploying and runnng application with all dependencies.
+Every app is defined as json file that specifies name, template, env variables and list of addons. For such configuration sidekik generates TheSS igniters for deploying and runnng application with all dependencies.
 
 ### Template
 
@@ -65,7 +77,7 @@ Usually addon is a dependency service like Redis or Mysql that the main app need
 Then run
 
 ```
-$ bin/hsr gen examples/TestApp.json
+$ bin/skik gen examples/TestApp.json
 ```
 
 
@@ -93,12 +105,12 @@ end
 ### Options
 ```ruby
 addon "AddonName" do
-  option :max_hussars, 300  # define option with default value
+  option :max_sidekiks, 300  # define option with default value
 
   generate do
     service do
       start do
-        sh "run --max-hussars=#{opts.max_hussars}" # use max_hussars options
+        sh "run --max-sidekiks=#{opts.max_sidekiks}" # use max_sidekiks options
       end
     end
   end

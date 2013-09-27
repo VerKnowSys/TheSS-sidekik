@@ -4,7 +4,7 @@ $:.unshift File.expand_path('../../lib', File.symlink?(__FILE__) ? File.readlink
 
 require 'rubygems' unless Object.const_defined?(:Gem)
 
-require "hussar"
-require "hussar/cli"
+require "sidekik"
+require "sidekik/cli"
 
-Hussar::CLI.run(ARGV)
+Sidekik::CLI.run(ARGV)

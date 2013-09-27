@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Service < Inner
     PHASES = {
       :install        => :shell,
@@ -88,7 +88,7 @@ module Hussar
         else
           gen_or_value
         end
-        hash.merge(Hussar.camel_case(field) => value)
+        hash.merge(Sidekik.camel_case(field) => value)
       end
     end
   end

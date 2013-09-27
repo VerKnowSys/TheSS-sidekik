@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class App
     attr_accessor :name, :addons, :env, :prefix, :template
 
@@ -55,7 +55,7 @@ module Hussar
 
     def initialize_addons
       @addons.map do |conf|
-        [Hussar::Addon[conf.delete(:type)], conf]
+        [Sidekik::Addon[conf.delete(:type)], conf]
       end
     end
   end

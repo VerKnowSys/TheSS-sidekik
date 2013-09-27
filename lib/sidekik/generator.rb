@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Generator < Inner
     def initialize(app, addon, &block)
       super(app, &block)

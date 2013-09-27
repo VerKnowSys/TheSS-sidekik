@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Inner
     def initialize(app, &block)
       @app = app

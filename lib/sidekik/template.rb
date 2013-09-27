@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Template
     attr_accessor :attrs
     def initialize(name, &block)

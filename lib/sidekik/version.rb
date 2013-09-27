@@ -1,3 +1,3 @@
-module Hussar
+module Sidekik
   VERSION = "0.1.0"
 end

@@ -10,7 +10,7 @@ addon "HipChat" do
 
         sh %Q{
           curl "http://api.hipchat.com/v1/rooms/message" -d \\
-            "color=green&notify=1&from=Hussar&room_id=#{opts.room}&auth_token=#{opts.token}&message=$hipchat_msg"
+            "color=green&notify=1&from=Sidekik&room_id=#{opts.room}&auth_token=#{opts.token}&message=$hipchat_msg"
         }, :novalidate
       end
     end

@@ -2,7 +2,7 @@ require File.expand_path("../spec_helper", __FILE__)
 require File.expand_path("../test_addon", __FILE__)
 
 describe "Gen" do
-  let(:addon) { Hussar::Addon["Test"] }
+  let(:addon) { Sidekik::Addon["Test"] }
 
   def gen(opts = {})
     addon.generate!(opts)[:services]["Test"]

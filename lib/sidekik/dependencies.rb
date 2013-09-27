@@ -1,4 +1,4 @@
-module Hussar
+module Sidekik
   class Dependencies < Inner
     def initialize(app, &block)
       super
